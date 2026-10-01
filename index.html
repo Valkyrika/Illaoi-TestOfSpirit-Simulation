@@ -585,8 +585,8 @@
               </label>
               <span style="display:flex; align-items:center; gap:4px; flex:none; font-size:12px; color:var(--text-dim);">
                 <span style="font-size:10.5px;">HP:</span>
-                <span class="val" id="v-illaoiHpPct" style="min-width:26px; text-align:right;">100%</span>
-                <input type="range" id="illaoiHpPct" min="30" max="100" step="1" value="100" style="width:60px;">
+                <span class="val" id="v-illaoiHpPct" style="min-width:26px; text-align:right;">30%</span>
+                <input type="range" id="illaoiHpPct" min="30" max="100" step="1" value="30" style="width:60px;">
                 <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not tested yet, numbers might be off, especially for lethal hits.</span></span>
               </span>
             </div>
@@ -678,6 +678,11 @@
               <input type="checkbox" id="compactVerbose" checked style="width:auto; accent-color:var(--accent);">
               Compact Verbose
               <span class="info" tabindex="0">?<span class="tip" role="tooltip">Shortens every verbose tag in the combat log to its bare minimum (e.g. [Shojin x4, +12% transfer] becomes [Shojin x4]). Purely visual, no effect on the math.</span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="conquerorUnexpectedTPct" style="width:auto; accent-color:var(--accent);">
+              Conqueror Unexpected T-%
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Use this if you want to consider Conqueror's boosted transfer-% as "unexpected" and match the logic for the Spear of Shojin boost etc.</span></span>
             </label>
             <div class="field" style="margin-top:8px;">
               <label>Decimals <span class="info" tabindex="0">?<span class="tip" role="tooltip">How many decimal places every combat log value displays with. Purely visual - every value is still computed and stored at full precision, this can't change the math.</span></span></label>
@@ -1038,13 +1043,15 @@
           label += `  [Shojin x${d.shojinStacks}, +${(shojinPct * 100).toFixed(0)}% transfer]`;
         }
       }
-      const spiritGsMult = d.gsMult + (coupDeGraceSpirit ? COUP_DE_GRACE_PCT : 0) + (cutDownSpirit ? CUT_DOWN_PCT : 0);
+      // Confirmed against a real reading (level 6, 0 armor, 2 tentacles,
+      // 1.0s falloff window): predicted 96.0 combined transfer at single
+      // Shojin application, real client showed ~107 - matches double
+      // application instead (107.5), same double-dip pattern as Giant
+      // Slayer. So for ability-sourced hits, Shojin's direct-damage mult
+      // feeds into preMitAmped (spiritGsMult) same as the direct hit, and
+      // then gets multiplied in again via vesselGsMult on the redirect.
+      const spiritGsMult = d.gsMult + (coupDeGraceSpirit ? COUP_DE_GRACE_PCT : 0) + (cutDownSpirit ? CUT_DOWN_PCT : 0) + (isAbilityDamage ? shojinPct : 0);
       const vesselGsMult = d.gsMult + (coupDeGraceVessel ? COUP_DE_GRACE_PCT : 0) + (cutDownVessel ? CUT_DOWN_PCT : 0) + shojinPct;
-      // Applied as its own standalone multiplier on postMit only (not folded
-      // into spiritGsMult/preMitAmped) so it doesn't also compound into the
-      // transfer a second time via vesselGsMult above - the transfer already
-      // gets its own single Shojin application there, for every hit type.
-      const shojinDirectMult = isAbilityDamage ? 1 + shojinPct : 1;
 
       const critMult = inp.hasCritChance && !isBonusDamage ? CRIT_MULT : 1;
       if (critMult > 1 + EPS) label += `  [Crit x${CRIT_MULT}]`;
@@ -1054,7 +1061,7 @@
         ? `  [sCarve x${spiritStacks}]`
         : `  [Spirit Carve x${spiritStacks}, -${spiritStacks * BC_STACK_PCT * 100}% AR]`;
       const sMult = isPhys ? (inp.hasBlackCleaver ? multFromStacks(d.spiritBaseArmor, spiritStacks) : d.spiritPhysMult) : d.spiritMagicMult;
-      const postMit = preMit * sMult * fsMult * spiritGsMult * critMult * shojinDirectMult;
+      const postMit = preMit * sMult * fsMult * spiritGsMult * critMult;
       spiritHp -= postMit;
 
       const vesselStacks = isPhys && inp.hasBlackCleaver ? activeStacks(vesselCarveStackTimes, when) : 0;
@@ -1099,7 +1106,7 @@
 
       const isKillingBlow = spiritHp <= 0 && tetherBrokenAt === null;
 
-      events.push({t: when, label, dmg: postMit, spiritAfter: Math.max(spiritHp, 0.0), redirected, vesselAfter: Math.max(vesselHp, 0.0), capMissedKill, posthumousHit, redirectLostToCap, isKillingBlow, preMit, spiritHpBefore, fsHijacked});
+      events.push({t: when, label, dmg: postMit, spiritAfter: Math.max(spiritHp, 0.0), redirected, vesselAfter: Math.max(vesselHp, 0.0), capMissedKill, posthumousHit, redirectLostToCap, isKillingBlow, preMit, spiritHpBefore, fsHijacked, transmissionPct});
 
       if (postMit > 0 && posthumousHit){
         posthumous.count += 1;
@@ -1241,25 +1248,25 @@
   initRankPips();
 
   const DEFAULT_COMBOS =
-`Combo 1: AA, W, AA, AA
+`Combo 1: AA, W
 Combo 2: AA, W, AA
-Combo 3: AA, W, AA, AA, W
-Combo 4: AA, W, AA, AA, W, AA
-Combo 6: AA, W
+Combo 3: AA, W, AA, AA
+Combo 4: AA, W, AA, AA, W
+Combo 5: AA, W, AA, AA, W, AA
+AA into 2x W: AA, W, W
 Just Passive:
 1x AA: AA
 2x AA: AA, AA
-Combo 4: AA, W, AA
 3x AA: AA, AA, AA
-Combo 5: AA, W, W
+4x AA: AA, AA, AA, AA
+5x AA: AA, AA, AA, AA, AA
+6x AA: AA, AA, AA, AA, AA, AA
 1x W: W
 2x W: W, W
-6x AA: AA, AA, AA, AA, AA, AA
-5x AA: AA, AA, AA, AA, AA
-4x AA: AA, AA, AA, AA
-W Finish Fish 1: AA, AA, AA, AA, AA, W
+W Finish Fish 1: AA, AA, AA, W
 W Finish Fish 2: AA, AA, AA, AA, W
-W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
+W Finish Fish 3: AA, AA, AA, AA, AA, W
+W Finish Fish 4: AA, AA, AA, AA, AA, AA, W`;
 
   function loadPersisted(){
     try {
@@ -1302,6 +1309,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       shojinPresetStacks: +$("shojinPresetStacks").value || 0,
       decimalPlaces: +$("decimalPlaces").value || 0,
       compactVerbose: $("compactVerbose").checked,
+      conquerorUnexpectedTPct: $("conquerorUnexpectedTPct").checked,
       hasFirstStrike: $("hasFirstStrike").checked,
       hasConqueror: $("hasConqueror").checked,
       hasCoupDeGrace: $("hasCoupDeGrace").checked,
@@ -1358,7 +1366,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       tentacleCount: inp.tentacleCount, tentacleSmashRank: inp.tentacleSmashRank, tentacleSlamDelay: inp.tentacleSlamDelay,
       eRank: inp.eRank, timeLimit: inp.timeLimit, targetHp: inp.targetHp, targetArmor: inp.targetArmor,
       targetCleaverStacks: inp.targetCleaverStacks, loseStacksAfterE: inp.loseStacksAfterE,
-      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, hasShojin: inp.hasShojin, shojinPresetStacks: inp.shojinPresetStacks, decimalPlaces: inp.decimalPlaces, compactVerbose: inp.compactVerbose, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
+      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, hasShojin: inp.hasShojin, shojinPresetStacks: inp.shojinPresetStacks, decimalPlaces: inp.decimalPlaces, compactVerbose: inp.compactVerbose, conquerorUnexpectedTPct: inp.conquerorUnexpectedTPct, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
       hasCoupDeGrace: inp.hasCoupDeGrace, hasCutDown: inp.hasCutDown, hasLastStand: inp.hasLastStand, illaoiHpPct: inp.illaoiHpPct,
       blackCleaverVerbose: inp.blackCleaverVerbose, conquerorVerbose: inp.conquerorVerbose, eTransferVerbose: inp.eTransferVerbose,
       combosText: $("combosText").value,
@@ -1510,7 +1518,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       let transferClass = '';
       let bangNote = '';
       if (isKill || ev.capMissedKill || ev.fsHijacked){
-        const naiveTransfer = Math.min(ev.dmg, ev.spiritHpBefore) * d.transmissionPct;
+        const naiveTransfer = Math.min(ev.dmg, ev.spiritHpBefore) * (inp.conquerorUnexpectedTPct ? d.transmissionPct : ev.transmissionPct);
         const delta = ev.redirected - naiveTransfer;
         if (delta < -EPS){
           transferClass = 'transfer-under';
@@ -1535,19 +1543,31 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
     }).join("");
 
     let expectedTransferTotal = 0;
-    for (const ev of r.events) if (!ev.posthumousHit) expectedTransferTotal += Math.min(ev.dmg, ev.spiritHpBefore) * d.transmissionPct;
+    let expectedBaseTotal = 0;
+    let minTransmissionPct = Infinity, maxTransmissionPct = -Infinity;
+    for (const ev of r.events) if (!ev.posthumousHit){
+      const base = Math.min(ev.dmg, ev.spiritHpBefore);
+      const evTransmissionPct = inp.conquerorUnexpectedTPct ? d.transmissionPct : ev.transmissionPct;
+      expectedTransferTotal += base * evTransmissionPct;
+      expectedBaseTotal += base;
+      if (evTransmissionPct < minTransmissionPct) minTransmissionPct = evTransmissionPct;
+      if (evTransmissionPct > maxTransmissionPct) maxTransmissionPct = evTransmissionPct;
+    }
     const transferDelta = r.transferredTotal - expectedTransferTotal;
     const transferDeltaPct = expectedTransferTotal > EPS ? (transferDelta / expectedTransferTotal * 100) : 0;
     const deltaClass = transferDelta < -EPS ? 'coral' : transferDelta > EPS ? 'accent' : '';
     const deltaSign = transferDelta >= 0 ? '+' : '';
     const realTransferPct = r.damageToSpirit > EPS ? (r.transferredTotal / r.damageToSpirit * 100) : 0;
-    const expectedPct = d.transmissionPct * 100;
+    const expectedPct = expectedBaseTotal > EPS ? (expectedTransferTotal / expectedBaseTotal * 100) : d.transmissionPct * 100;
+    const expectedPctLabel = (expectedBaseTotal > EPS && maxTransmissionPct - minTransmissionPct > EPS)
+      ? `${(minTransmissionPct * 100).toFixed(pctDp())}% - ${(maxTransmissionPct * 100).toFixed(pctDp())}%`
+      : `${expectedPct.toFixed(pctDp())}%`;
     const pctDiff = realTransferPct - expectedPct;
     const pctDiffSign = pctDiff >= 0 ? '+' : '';
     const damageToSpiritPct = inp.targetHp > EPS ? (r.damageToSpirit / inp.targetHp * 100) : 0;
     const transferBlock = `
       <div class="kv"><div class="k">Damage to Spirit</div><div class="v">${fmt(r.damageToSpirit)} <small style="font-weight:500;color:var(--text-faint);">(${damageToSpiritPct.toFixed(pctDp())}% of total Spirit HP)</small></div></div>
-      <div class="kv"><div class="k">Real / expected transfer %</div><div class="v">${realTransferPct.toFixed(pctDp())}% / ${expectedPct.toFixed(pctDp())}% <small style="font-weight:500;color:var(--text-faint);">(${pctDiffSign}${pctDiff.toFixed(pctDp())}%)</small></div></div>
+      <div class="kv"><div class="k">Real / expected transfer %</div><div class="v">${realTransferPct.toFixed(pctDp())}% / ${expectedPctLabel} <small style="font-weight:500;color:var(--text-faint);">(${pctDiffSign}${pctDiff.toFixed(pctDp())}%)</small></div></div>
       <div class="kv"><div class="k">Real / expected transfer damage</div><div class="v">${fmt(r.transferredTotal)} / ${fmt(expectedTransferTotal)}</div></div>
       <div class="kv"><div class="k">Loss/gain</div><div class="v ${deltaClass}">${deltaSign}${fmt(transferDelta)} (${deltaSign}${transferDeltaPct.toFixed(pctDp())}%)</div></div>
     `;
@@ -1612,6 +1632,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       if (saved.shojinPresetStacks !== undefined) $("shojinPresetStacks").value = saved.shojinPresetStacks;
       if (saved.decimalPlaces !== undefined) $("decimalPlaces").value = saved.decimalPlaces;
       if (saved.compactVerbose !== undefined) $("compactVerbose").checked = saved.compactVerbose;
+      if (saved.conquerorUnexpectedTPct !== undefined) $("conquerorUnexpectedTPct").checked = saved.conquerorUnexpectedTPct;
       if (saved.hasFirstStrike !== undefined) $("hasFirstStrike").checked = saved.hasFirstStrike;
       if (saved.hasConqueror !== undefined) $("hasConqueror").checked = saved.hasConqueror;
       if (saved.hasCoupDeGrace !== undefined) $("hasCoupDeGrace").checked = saved.hasCoupDeGrace;
