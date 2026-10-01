@@ -1,0 +1,1706 @@
+<!-- Everything here is vibe-coded. -->
+<title>E-Transfer-Simulation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+
+  :root{
+    --bg:#e6ebe1;
+    --surface:#f2f5ee;
+    --surface-2:#dde4d5;
+    --surface-3:#ccd8c1;
+    --border:#b7c7aa;
+    --border-strong:#95a985;
+    --text:#20261d;
+    --text-dim:#565f4c;
+    --text-faint:#838c73;
+
+    --accent:#3d7d68;
+    --accent-ink:#2c5e4d;
+    --accent-wash:rgba(61,125,104,.13);
+
+    --gold:#96692f;
+    --gold-wash:rgba(150,105,47,.14);
+    --coral:#9c3f2f;
+    --coral-wash:rgba(156,63,47,.13);
+    --coral-wash-strong:rgba(156,63,47,.32);
+    --capmiss-wash:rgba(184,82,38,.30);
+    --capmiss-stripe:rgba(199,156,64,.45);
+    --miss-red:#8c5850;
+    --sage:#55705b;
+    --sage-wash:rgba(85,112,91,.14);
+    --fsbug:#3d6f91;
+    --fsbug-wash:rgba(61,111,145,.14);
+    --fsbug-stripe:rgba(61,111,145,.30);
+    --conq:#8c3a4a;
+    --conq-wash:rgba(140,58,74,.14);
+    --stripe-width:2px;
+
+    --shadow:0 1px 2px rgba(20,28,20,.07), 0 8px 24px -12px rgba(20,28,20,.2);
+    --font-display:"Cinzel", "Iowan Old Style", serif;
+    --font-body:"Manrope", "Segoe UI", sans-serif;
+    --font-mono:"JetBrains Mono", "SF Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0a1512;
+      --surface:#101f1b;
+      --surface-2:#172d27;
+      --surface-3:#1e3830;
+      --border:#2a463b;
+      --border-strong:#3a5c4c;
+      --text:#e4ece6;
+      --text-dim:#8ea89a;
+      --text-faint:#5c7266;
+
+      --accent:#4dab8f;
+      --accent-ink:#7fc9ae;
+      --accent-wash:rgba(77,171,143,.14);
+
+      --gold:#b8874f;
+      --gold-wash:rgba(184,135,79,.16);
+      --coral:#b1503c;
+      --coral-wash:rgba(177,80,60,.16);
+      --coral-wash-strong:rgba(177,80,60,.36);
+      --capmiss-wash:rgba(201,104,48,.34);
+      --capmiss-stripe:rgba(219,173,94,.45);
+      --miss-red:#a5766a;
+      --sage:#6e9481;
+      --sage-wash:rgba(110,148,129,.14);
+      --fsbug:#6fa8c9;
+      --fsbug-wash:rgba(111,168,201,.16);
+      --fsbug-stripe:rgba(111,168,201,.34);
+      --conq:#d08a97;
+      --conq-wash:rgba(208,138,151,.16);
+
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0a1512;
+    --surface:#101f1b;
+    --surface-2:#172d27;
+    --surface-3:#1e3830;
+    --border:#2a463b;
+    --border-strong:#3a5c4c;
+    --text:#e4ece6;
+    --text-dim:#8ea89a;
+    --text-faint:#5c7266;
+
+    --accent:#4dab8f;
+    --accent-ink:#7fc9ae;
+    --accent-wash:rgba(77,171,143,.14);
+
+    --gold:#b8874f;
+    --gold-wash:rgba(184,135,79,.16);
+    --coral:#b1503c;
+    --coral-wash:rgba(177,80,60,.16);
+    --coral-wash-strong:rgba(177,80,60,.36);
+    --capmiss-wash:rgba(201,104,48,.34);
+    --capmiss-stripe:rgba(219,173,94,.45);
+    --miss-red:#a5766a;
+    --sage:#6e9481;
+    --sage-wash:rgba(110,148,129,.14);
+    --fsbug:#6fa8c9;
+    --fsbug-wash:rgba(111,168,201,.16);
+    --fsbug-stripe:rgba(111,168,201,.34);
+    --conq:#d08a97;
+    --conq-wash:rgba(208,138,151,.16);
+
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:14px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--font-display); text-wrap:balance; margin:0; letter-spacing:.01em;}
+  .num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  a{color:var(--accent);}
+
+  ::selection{background:var(--accent-wash);}
+
+  .page{max-width:1280px; margin:0 auto; padding:28px 24px 64px;}
+
+  .masthead{
+    display:flex; align-items:center; gap:16px;
+    padding-bottom:20px; margin-bottom:24px;
+    border-bottom:1px solid var(--border);
+  }
+  .masthead h1{font-size:26px; font-weight:600; color:var(--text);}
+
+  .layout{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+  .panel-head{
+    padding:14px 16px 12px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+  }
+  .panel-head h2{font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); font-family:var(--font-body); font-weight:700;}
+  .panel-body{padding:16px;}
+
+  .controls{position:sticky; top:20px; z-index:10; display:flex; flex-direction:column; gap:14px;}
+  fieldset{border:0; margin:0; padding:0;}
+  legend{
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent-ink);
+    font-weight:700; padding:0 0 10px; width:100%;
+  }
+  .field{display:flex; flex-direction:column; gap:4px; margin-bottom:10px;}
+  .field:last-child{margin-bottom:0;}
+  .field-row{display:flex; gap:10px;}
+  .field-row .field{flex:1; min-width:0;}
+  label{font-size:12px; color:var(--text-dim); display:flex; justify-content:space-between; gap:6px;}
+  label .val{font-family:var(--font-mono); color:var(--text); font-weight:600;}
+
+  input[type="number"], select, textarea{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:7px;
+    color:var(--text);
+    font-family:var(--font-mono);
+    font-size:13px;
+    padding:7px 9px;
+  }
+  select{font-family:var(--font-body); font-size:13px;}
+  input[type="range"]{
+    width:100%; accent-color:var(--accent); height:18px; background:transparent;
+  }
+  textarea{font-size:12px; line-height:1.6; resize:vertical; min-height:170px;}
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, .combo-row:focus-visible{
+    outline:2px solid var(--accent); outline-offset:1px;
+  }
+
+  .hr{height:1px; background:var(--border); margin:14px 0; border:0;}
+
+  button{
+    font-family:var(--font-body); font-weight:700; font-size:13px;
+    border-radius:8px; border:1px solid transparent; cursor:pointer;
+    padding:10px 14px;
+  }
+  .hint{font-size:11px; color:var(--text-faint); margin-top:8px;}
+  .warn-label{
+    font-size:11px; color:var(--coral); background:var(--coral-wash);
+    border-left:2px solid var(--coral); border-radius:4px;
+    padding:6px 9px; margin-top:8px; line-height:1.45;
+  }
+
+  .info{
+    position:relative; isolation:isolate; z-index:20;
+    display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border-radius:50%; flex:none;
+    background:var(--surface-3); border:1px solid var(--border-strong);
+    color:var(--text-dim); font-size:10px; font-weight:700; font-family:var(--font-body);
+    cursor:help; vertical-align:middle; margin-left:5px;
+  }
+  .info:hover, .info:focus-visible{ color:var(--bg); background:var(--accent); border-color:var(--accent); outline:none; }
+  .info .tip, .warn-btn .tip{
+    position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%);
+    width:max-content; max-width:260px; padding:9px 11px; border-radius:8px;
+    background:var(--surface-3); background-clip:padding-box; border:1px solid var(--border-strong); box-shadow:var(--shadow);
+    color:var(--text); font-size:11.5px; font-weight:500; line-height:1.5; text-align:left;
+    white-space:normal; text-transform:none; letter-spacing:normal;
+    opacity:0; visibility:hidden; transition:opacity .12s ease;
+    z-index:9999; pointer-events:none;
+  }
+  .info .tip::after, .warn-btn .tip::after{
+    content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color:var(--border-strong);
+  }
+  .info .tip::before, .warn-btn .tip::before{
+    content:""; position:absolute; top:calc(100% - 1.5px); left:50%; transform:translateX(-50%);
+    border:5px solid transparent; border-top-color:var(--surface-3); z-index:1;
+  }
+  .info:hover .tip, .info:focus-visible .tip, .warn-btn:hover .tip, .warn-btn:focus-visible .tip, .warn-btn .tip:hover, .warn-btn .tip.tip-open{ opacity:1; visibility:visible; }
+  .warn-btn{
+    position:relative; isolation:isolate; z-index:20; display:inline-flex;
+    background:var(--coral-wash); border:1px solid var(--coral); color:var(--coral);
+    border-radius:7px; padding:5px 11px; font-size:11.5px; font-weight:700;
+    font-family:var(--font-body); cursor:help;
+  }
+  .warn-btn:hover, .warn-btn:focus-visible{ background:var(--coral); color:var(--bg); outline:none; }
+  .warn-btn .tip{
+    bottom:auto; top:calc(100% + 4px); pointer-events:auto;
+  }
+  .warn-btn .tip::after{ top:auto; bottom:100%; border-top-color:transparent; border-bottom-color:var(--border-strong); }
+  .warn-btn .tip::before{ top:auto; bottom:calc(100% - 1.5px); border-top-color:transparent; border-bottom-color:var(--surface-3); }
+  .warn-btn .tip a{ color:var(--accent); }
+  .panel-head .info, .label .info{ margin-left:6px; }
+
+  .ability-rank-row{ flex-direction:row; align-items:center; justify-content:space-between; gap:10px; }
+  .ability-rank-row label{ font-size:13px; color:var(--text); font-weight:600; white-space:nowrap; }
+  .rank-pips{ display:flex; gap:5px; }
+  .pip{
+    width:18px; height:18px; border-radius:4px; flex:none; padding:0;
+    background:var(--surface-3); border:1px solid var(--border-strong);
+    cursor:pointer; transition:background .12s ease, border-color .12s ease;
+  }
+  .pip:hover{ border-color:var(--accent); }
+  .pip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .pip.filled{ background:var(--accent); border-color:var(--accent); }
+
+  .stat-strip{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:12px;
+
+  }
+  .stat-tile{background:var(--surface); padding:12px 14px;}
+  .stat-tile:first-child{border-radius:11px 0 0 11px;}
+  .stat-tile:last-child{border-radius:0 11px 11px 0;}
+  .stat-tile .label{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint); white-space:nowrap;}
+  .stat-tile .value{font-family:var(--font-mono); font-size:18px; font-weight:700; margin-top:3px; color:var(--text);}
+  .stat-tile .value small{font-size:11px; color:var(--text-dim); font-weight:500;}
+  .stat-tile.ref{background:var(--gold-wash);}
+  .stat-tile.ref .value.gold{color:var(--gold);}
+  .stat-tile.ref .info{background:var(--gold-wash); border-color:var(--gold); color:var(--gold);}
+  .stat-tile.ref .info:hover, .stat-tile.ref .info:focus-visible{background:var(--gold); color:var(--bg);}
+
+  .rank-row{
+    display:grid;
+    grid-template-columns:96px 1fr 92px;
+    align-items:center;
+    gap:12px;
+    padding:9px 6px;
+    border-radius:8px;
+    cursor:pointer;
+    background:transparent;
+    border:1px solid transparent;
+  }
+  .rank-row:hover{background:var(--surface-2);}
+  .rank-row.active{background:var(--accent-wash); border-color:var(--accent);}
+  .rank-row .name{font-weight:700; font-size:13px;}
+  .rank-row .status{font-size:10.5px; color:var(--text-faint); font-weight:500; margin-top:1px;}
+  .bar-track{position:relative; height:20px; background:var(--surface-2); border-radius:5px; overflow:hidden;}
+  .bar-fill{
+    position:absolute; inset:0 auto 0 0; height:100%;
+    background:var(--accent); border-radius:5px;
+    transition:width .35s cubic-bezier(.2,.7,.3,1);
+  }
+  .rank-row.crown .bar-fill{background:var(--gold);}
+  .rank-row.trough .bar-fill{background:var(--coral);}
+  .bar-marker{
+    position:absolute; top:0; bottom:0; width:2px; transform:translateX(-50%);
+    background:var(--text); opacity:.55; z-index:2; pointer-events:none;
+  }
+  .rank-row .amount{text-align:right; font-family:var(--font-mono); font-weight:700; font-size:13px;}
+  .rank-row .amount small{display:block; font-weight:500; color:var(--text-faint); font-size:10.5px;}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    padding:1px 7px; border-radius:999px; margin-left:6px;
+  }
+  .badge.crown{background:var(--gold-wash); color:var(--gold);}
+  .badge.trough{background:var(--coral-wash); color:var(--coral);}
+
+  .excluded-list{display:flex; flex-direction:column; gap:2px;}
+  .excluded-row{
+    display:grid; grid-template-columns:96px 1fr 92px; gap:12px; align-items:center;
+    padding:7px 6px; border-radius:8px; cursor:pointer; opacity:.62;
+  }
+  .excluded-row:hover{opacity:1; background:var(--surface-2);}
+  .excluded-row .name{font-size:12.5px; font-weight:700;}
+  .excluded-row .amount{text-align:right; font-family:var(--font-mono); font-size:12.5px;}
+  .excluded-row .amount small{display:block; font-weight:500; color:var(--text-faint); font-size:10px;}
+
+  .callouts{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  @media (max-width:600px){.callouts{grid-template-columns:1fr;}}
+  .callout{
+    border-radius:10px; padding:12px 14px; border:1px solid var(--border);
+    background:var(--surface-2); border-left:3px solid var(--border-strong);
+  }
+  .callout.crown{border-left-color:var(--gold); background:var(--gold-wash);}
+  .callout.trough{border-left-color:var(--coral); background:var(--coral-wash);}
+  .callout.bound{border-left-color:var(--sage); background:var(--sage-wash);}
+  .callout.bound .k{color:var(--sage);}
+  .callout .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); font-weight:700;}
+  .callout .combo-name{font-family:var(--font-display); font-size:17px; margin-top:2px;}
+  .callout .figs{font-family:var(--font-mono); font-size:12.5px; color:var(--text-dim); margin-top:4px;}
+  .callout .figs b{color:var(--text); font-weight:700;}
+
+  .chip-row-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin-top:10px;}
+  .chip-row-label:first-child{margin-top:0;}
+  .combo-chip-row{display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 2px;}
+  .chip{
+    font-family:var(--font-mono); font-size:11px; font-weight:600;
+    padding:2px 8px; border-radius:5px; background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim);
+  }
+  .chip.intended{background:var(--coral); color:var(--bg); border-color:transparent;}
+  .chip.unintended{background:var(--gold); color:var(--bg); border-color:transparent;}
+  .chip.miss{background:var(--miss-red); color:var(--bg); border-color:transparent;}
+
+  .kv-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px 18px; margin:14px 0;}
+  .kv{display:flex; flex-direction:column; gap:2px;}
+  .kv .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint);}
+  .kv .v{font-family:var(--font-mono); font-size:14px; font-weight:700;}
+  .kv .v.coral{color:var(--coral);}
+  .kv .v.accent{color:var(--accent-ink);}
+
+  .log-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:10px;}
+  table.log{width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; min-width:620px;}
+  table.log th{
+    text-align:right; font-weight:700; color:var(--text-faint); text-transform:uppercase; font-size:10px; letter-spacing:.05em;
+    padding:8px 10px; border-bottom:1px solid var(--border); background:var(--surface-2); position:sticky; top:0;
+  }
+  table.log th:first-child, table.log td:first-child{text-align:left;}
+  table.log th:nth-child(2), table.log td:nth-child(2){text-align:left;}
+  table.log td{padding:6px 10px; text-align:right; border-bottom:1px solid var(--border); white-space:nowrap;}
+  table.log tr:last-child td{border-bottom:0;}
+  table.log tr.kill td{background:var(--coral-wash);}
+  table.log tr.kill-capped td{background:var(--coral-wash-strong); box-shadow:inset 3px 0 0 var(--coral);}
+  table.log tr.kill-capped td.ev{color:var(--coral); font-weight:800;}
+  table.log tr.capmiss td{
+    background:
+      repeating-linear-gradient(135deg, var(--capmiss-stripe) 0 var(--stripe-width), transparent var(--stripe-width) calc(var(--stripe-width) + 6px)),
+      var(--capmiss-wash);
+    box-shadow:inset 3px 0 0 var(--gold);
+  }
+  table.log tr.capmiss td.ev{color:var(--text); font-weight:800;}
+  table.log tr.fs-hijack td{
+    background:
+      repeating-linear-gradient(135deg, var(--fsbug-stripe) 0 var(--stripe-width), transparent var(--stripe-width) calc(var(--stripe-width) + 6px)),
+      var(--fsbug-wash);
+    box-shadow:inset 3px 0 0 var(--fsbug);
+  }
+  table.log tr.fs-hijack td.ev{font-weight:800;}
+  table.log td.ev{font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  table.log td.transfer-cell{display:flex; align-items:center; justify-content:flex-end; gap:4px;}
+  table.log td.transfer-cell .info{margin-right:auto;}
+  table.log .miss{color:var(--text-faint); font-style:italic; font-weight:500;}
+  table.log .transfer-under, table.log .transfer-over{
+    display:inline-block; padding:1px 7px; border-radius:5px; font-weight:700;
+  }
+  table.log .transfer-under{background:var(--coral); color:var(--bg);}
+  table.log .transfer-over{background:var(--accent); color:var(--bg);}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+  .empty-note{color:var(--text-faint); font-size:13px; padding:20px 4px;}
+
+  footer{margin-top:28px; color:var(--text-faint); font-size:11.5px; text-align:center;}
+
+  .theme-toggle{
+    margin-left:auto; flex:none;
+    background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-dim);
+    border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:700;
+    font-family:var(--font-body); cursor:pointer;
+  }
+  .theme-toggle:hover{border-color:var(--accent); color:var(--text);}
+  .reset-btn{
+    background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-dim);
+    border-radius:7px; padding:5px 11px; font-size:11.5px; font-weight:700;
+    font-family:var(--font-body); cursor:pointer;
+  }
+  .reset-btn:hover{border-color:var(--accent); color:var(--text);}
+</style>
+<script>
+
+  (function(){
+    try {
+      const saved = localStorage.getItem("spirit-ledger-theme");
+      document.documentElement.setAttribute("data-theme", (saved === "light" || saved === "dark") ? saved : "dark");
+    } catch (e) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
+
+<div class="page">
+
+  <div class="masthead">
+    <div>
+      <h1>E-Transfer-Simulation</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+      <button type="button" class="warn-btn" tabindex="0">Timing warning<span class="tip" role="tooltip">E timings are arbitrary, precise timings might differ in-game and cause different numbers. Simulation expects the E-Slam-1 impact on exactly 1.000s.<br><a href="https://www.youtube.com/watch?v=yQUYJPg8twQ" target="_blank" rel="noopener">Reference video</a></span></button>
+      <button type="button" id="debugCopy" class="theme-toggle" style="margin-left:0;" title="Copy every setting on this page to the clipboard as text">Debug Copy</button>
+      <button type="button" id="debugPaste" class="theme-toggle" style="margin-left:0;" title="Paste a Debug Copy snapshot back into every setting">Debug Paste</button>
+      <button type="button" id="themeToggle" class="theme-toggle" style="margin-left:0;"></button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="controls">
+
+      <div class="panel">
+        <div class="panel-head"><h2>Target dummy</h2><span class="info" tabindex="0">?<span class="tip" role="tooltip">The Spirit spawns as an exact copy of these stats.</span></span></div>
+        <div class="panel-body">
+          <div class="field-row">
+            <div class="field"><label>HP</label><input type="number" id="targetHp" value="1000" step="100"></div>
+            <div class="field"><label>Resistances</label><input type="number" id="targetArmor" value="0" step="10"></div>
+          </div>
+          <div class="field ability-rank-row">
+            <label>Black Cleaver stacks</label>
+            <div class="rank-pips" data-target="targetCleaverStacks" data-min="0">
+              <button type="button" class="pip" data-value="1"></button>
+              <button type="button" class="pip" data-value="2"></button>
+              <button type="button" class="pip" data-value="3"></button>
+              <button type="button" class="pip" data-value="4"></button>
+              <button type="button" class="pip" data-value="5"></button>
+            </div>
+            <input type="hidden" id="targetCleaverStacks" value="0">
+          </div>
+          <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+            <input type="checkbox" id="loseStacksAfterE" style="width:auto; accent-color:var(--accent);">
+            Lose stacks after E
+            <span class="info" tabindex="0">?<span class="tip" role="tooltip">Timing E so that the Spirit is created with reduced armor from Carve but the real target loses their Carve stacks before damage is applied to the Spirit.</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Illaoi</h2></div>
+        <div class="panel-body">
+          <fieldset>
+            <div class="field">
+              <label>Level <span class="val" id="v-level">6</span></label>
+              <input type="range" id="level" min="1" max="20" value="6">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Bonus AD</label>
+                <input type="number" id="adFromItems" value="0" step="10">
+              </div>
+              <div class="field">
+                <label>Ability power</label>
+                <input type="number" id="abilityPower" value="0" step="10">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Armor pen %</label>
+                <input type="number" id="armorPenPct" value="0" step="5" min="0" max="100">
+              </div>
+              <div class="field">
+                <label>Lethality</label>
+                <input type="number" id="lethality" value="0" step="5" min="0">
+              </div>
+            </div>
+          </fieldset>
+
+          <hr class="hr">
+          <fieldset>
+            <legend>Items</legend>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+              <input type="checkbox" id="hasBlackCleaver" style="width:auto; accent-color:var(--accent);">
+              Black Cleaver Carve
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Apply black cleaver shred like it is done in-game.</span></span>
+            </label>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin:0;">
+                <input type="checkbox" id="hasGiantSlayer" style="width:auto; accent-color:var(--accent);">
+                Giant Slayer
+              </label>
+              <span style="display:flex; align-items:center; gap:4px; flex:none; font-size:12px; color:var(--text-dim);">
+                <span style="font-size:10.5px;">Bonus HP:</span>
+                <input type="checkbox" id="giantSlayerHpManual" style="width:auto; accent-color:var(--accent);" title="Manual override for real champion testing">
+                <input type="number" id="giantSlayerHpOverride" value="0" step="100" min="0" max="1500" style="width:58px; flex:none; padding:5px 6px; font-size:12px;">
+                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Any HP over 1000 is regarded as Bonus HP for Target Dummies.<br>Bonus HP: unchecked, this automatically shows the target dummy's HP above 1000 (capped at 1500). Checked, you set Bonus HP manually instead - not added on top of the currently selected Target Dummy HP - starting at 0.</span></span>
+              </span>
+            </div>
+            <hr class="hr" style="margin:10px 0;">
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+              <input type="checkbox" id="hasSteraks" style="width:auto; accent-color:var(--accent);">
+              Steraks AD
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Add AD according to Steraks REAL values, not rounded UI values.</span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="hasCritChance" style="width:auto; accent-color:var(--accent);">
+              100% Crit Chance
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">All autos and W's own empowered attack always crit for 200% damage.<br>Confirmed against the real client: W's bonus damage does NOT crit (tagged as spell damage per the wiki). Tentacle slams are assumed not to crit either, same reasoning, not separately tested yet.</span></span>
+            </label>
+          </fieldset>
+
+          <hr class="hr">
+          <fieldset>
+            <legend>Runes</legend>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+              <input type="checkbox" id="hasConqueror" style="width:auto; accent-color:var(--accent);">
+              Conqueror
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Started slams don't adjust their stats. They can still benefit from boosted E.<br>W bonus damage is boosted from W regular damage, including boosted E. Conqueror stack behavior is janky in-game due to W overriding the cast-instance of tentacles. Simulation accounts for that.</span></span>
+            </label>
+            <div class="warn-label" style="display:none;" id="conquerorWarning">Timing Conqueror is very precise but the E skill is not!! Numbers can be slightly off.</div>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="hasFirstStrike" style="width:auto; accent-color:var(--accent);">
+              First Strike
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">First Strike is bugged for same cast-instance damage. The bug reduces damage by a lot. AA and regular W damage works fine.<br>Formula to calculate bugged first strike damage: (Pre-mitigation &times; Spiritmod) &times; 0.07 &times; Emod &times; (1 + Vesselmod) &times; 1.07<br>Additionally, First Strike double dips the damage amp on AA/regular W's own redirect, so the real amp there is not 1.07, rather it is 1.07&sup2;.</span></span>
+            </label>
+            <div class="warn-label" style="display:none;" id="firstStrikeWarning">Simulation is not exact as all First Strike mechanics are not fully understood yet. That said, only attacking the Spirit might give accurate numbers until reaching lethal damage threshold.</div>
+            <hr class="hr" style="margin:10px 0;">
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+              <input type="checkbox" id="hasCoupDeGrace" style="width:auto; accent-color:var(--accent);">
+              Coup de Grace
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not tested yet, numbers might be off, especially for lethal hits.</span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="hasCutDown" style="width:auto; accent-color:var(--accent);">
+              Cut Down
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not tested yet, numbers might be off, especially for lethal hits.</span></span>
+            </label>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:8px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin:0;">
+                <input type="checkbox" id="hasLastStand" style="width:auto; accent-color:var(--accent);">
+                Last Stand
+              </label>
+              <span style="display:flex; align-items:center; gap:4px; flex:none; font-size:12px; color:var(--text-dim);">
+                <span style="font-size:10.5px;">HP:</span>
+                <span class="val" id="v-illaoiHpPct" style="min-width:26px; text-align:right;">100%</span>
+                <input type="range" id="illaoiHpPct" min="30" max="100" step="1" value="100" style="width:60px;">
+                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not tested yet, numbers might be off, especially for lethal hits.</span></span>
+              </span>
+            </div>
+          </fieldset>
+
+          <hr class="hr">
+          <div class="field">
+            <label style="font-size:14px; font-weight:700; color:var(--text);">Tentacles in range</label>
+            <input type="number" id="tentacleCount" value="2" min="0" max="6" step="1" style="font-size:16px; padding:9px 10px; font-weight:700;">
+          </div>
+
+          <hr class="hr">
+          <fieldset>
+            <legend>Ability ranks</legend>
+            <div class="field ability-rank-row">
+              <label>Q - Tentacle Smash</label>
+              <div class="rank-pips" data-target="tentacleSmashRank" data-min="0">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="tentacleSmashRank" value="3">
+            </div>
+            <div class="field ability-rank-row">
+              <label>W - Harsh Lesson</label>
+              <div class="rank-pips" data-target="wRank" data-min="1">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="wRank" value="1">
+            </div>
+            <div class="field ability-rank-row">
+              <label>E - Test of Spirit</label>
+              <div class="rank-pips" data-target="eRank" data-min="1">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="eRank" value="1">
+            </div>
+          </fieldset>
+
+          <hr class="hr">
+          <fieldset>
+            <legend>Settings</legend>
+            <div class="field">
+              <label>Slam animation (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not supposed to be used.</span></span></label>
+              <input type="number" id="tentacleSlamDelay" value="1.0" step="0.1" min="0.1">
+            </div>
+            <div class="field">
+              <label>AA-Reset efficiency (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Time delay after AA connects damage to W. 0s is frame perfect reset.</span></span></label>
+              <input type="number" id="wReactionDelay" value="0.15" step="0.05" min="0">
+            </div>
+            <div class="field">
+              <label>Spirit lifetime (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Timer starts the moment E lands, so effective lifetime is 6.25s.</span></span></label>
+              <input type="number" id="timeLimit" value="6.25" step="0.1" min="1" max="7">
+            </div>
+            <div class="field">
+              <label>First AA delay (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Add delay before the very first autoattack as buffering that auto can be difficult.</span></span></label>
+              <input type="number" id="firstAaDelay" value="0.1" step="0.05" min="0">
+            </div>
+            <div class="field">
+              <label>E Transfer-% Override <span style="display:inline-flex; align-items:center;"><span class="val" id="v-bonusETransfer">0</span><span class="info" tabindex="0">?<span class="tip" role="tooltip">Adds value on top of the regular E-Transfer-%.<br>If used, result is not achievable in-game. Just for scientific purposes.</span></span></span></label>
+              <input type="range" id="bonusETransferPct" min="-100" max="100" step="1" value="0">
+            </div>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="blackCleaverVerbose" checked style="width:auto; accent-color:var(--accent);">
+              Black Cleaver Verbose
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Lists Carve stacks on the combat logs.</span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="conquerorVerbose" checked style="width:auto; accent-color:var(--accent);">
+              Conqueror Verbose
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Lists Conqueror AD and stack grants on the combat logs.</span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="eTransferVerbose" style="width:auto; accent-color:var(--accent);">
+              Conqueror E-% Verbose
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Lists E-Transfer AD on combat logs ONLY when it does not match the Conqueror stacks from the source of the transfer.</span></span>
+            </label>
+            <div class="field" style="margin-top:8px;">
+              <label>Decimals <span class="info" tabindex="0">?<span class="tip" role="tooltip">How many decimal places every combat log value displays with. Purely visual - every value is still computed and stored at full precision, this can't change the math.</span></span></label>
+              <input type="number" id="decimalPlaces" value="1" step="1" min="0" max="3">
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Combos</h2>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" id="resetCombos" class="reset-btn">Reset</button>
+            <span class="info" tabindex="0">?<span class="tip" role="tooltip">Tentacle slams aren't written here &mdash; they land automatically from W hits and Illaoi's passive timer. Starting a combo with W means W was precast before engaging, so that opening swing is already empowered; any W written after that still reacts to a landed hit, which is the realistic/efficient way to use it in practice.</span></span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label>One combo per line &mdash; <span class="val">Name: AA, W, AA &hellip;</span></label>
+            <textarea id="combosText" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="results" style="display:flex; flex-direction:column; gap:20px;"></div>
+
+  </div>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const EPS = 1e-9;
+
+  const W_COOLDOWN = 4.0;
+  const POST_W_DELAY = 0.20;
+  const W_MAXHP_PCT = {1:0.03, 2:0.035, 3:0.04, 4:0.045, 5:0.05};
+  const W_AD_RATIO = 0.035;
+  const W_MIN_DAMAGE = {1:20, 2:30, 3:40, 4:50, 5:60};
+
+  const TENTACLE_AD_RATIO = 1.10;
+  const TENTACLE_AP_RATIO = 0.40;
+  const TENTACLE_SMASH_BONUS = {0:0.0, 1:0.10, 2:0.15, 3:0.20, 4:0.25, 5:0.30};
+  const SLAM_FALLOFF_PER_STACK = 0.50;
+  const SLAM_FALLOFF_CAP = 0.75;
+  const SLAM_FALLOFF_WINDOW = 0.66;
+  const TENTACLE_AUTO_REGAP = 0.25;
+
+  const E_TRANSMISSION_PCT = {1:0.25, 2:0.30, 3:0.35, 4:0.40, 5:0.45};
+  const E_AD_RATIO = 0.08;
+
+  const BC_STACK_PCT = 0.06;
+  const BC_MAX_STACKS = 5;
+  const BC_STACK_DURATION = 6.0;
+
+  const FIRST_STRIKE_PCT = 0.07;
+  const FIRST_STRIKE_DURATION = 3.0;
+
+  const GIANT_SLAYER_MAX_PCT = 0.15;
+  const GIANT_SLAYER_CAP_BONUS_HP = 1500;
+  const DUMMY_BASE_HP = 1000;
+
+  const COUP_DE_GRACE_PCT = 0.08;
+  const COUP_DE_GRACE_HP_THRESHOLD = 0.40;
+  const CUT_DOWN_PCT = 0.08;
+  const CUT_DOWN_HP_THRESHOLD = 0.60;
+  const LAST_STAND_MIN_PCT = 0.05;
+  const LAST_STAND_MAX_PCT = 0.11;
+  const LAST_STAND_START_HP_PCT = 0.60;
+  const LAST_STAND_MAX_HP_PCT = 0.30;
+
+  const CRIT_MULT = 2.0;
+
+  const CONQUEROR_STACK_DURATION = 5.0;
+  const CONQUEROR_MAX_STACKS = 12;
+  const CONQUEROR_STACKS_PER_HIT = 2;
+  const CONQUEROR_AD_MIN = 1.08;
+  const CONQUEROR_AD_MAX = 2.56;
+
+  const CONQUEROR_TENTACLE_LOCKIN_DELAY = 0;
+  const CONQUEROR_IDENTITY_LOCKIN_DELAY = 0.25;
+
+  const CONQUEROR_INSTANCE_GRANT_WINDOW = 4.0;
+  const CONQ_STACK_TAG = '  <span style="color:var(--conq);">[Conq stack]</span>';
+
+  const ATTACK_SPEED_CAP = 3.003;
+  const ATTACK_SPEED_FLOOR = 0.2;
+
+  const BASE_AD = 65, AD_PER_LEVEL = 5;
+  const BASE_AS = 0.625, AS_RATIO = 0.625, AS_PER_LEVEL = 2.5, WINDUP_PCT = 0.21429;
+
+  function growthBonus(perLevel, lvl){
+    const ups = lvl - 1;
+    return perLevel * ups * (0.7025 + 0.0175 * ups);
+  }
+  function resistMultiplier(r){
+    return r >= 0 ? 100 / (100 + r) : 2 - 100 / (100 - r);
+  }
+
+  function effectiveArmor(baseArmor, reductionMult, inp){
+    const afterReduction = baseArmor * reductionMult;
+    if (afterReduction <= 0) return afterReduction;
+    const afterPct = afterReduction * (1 - inp.armorPenPct);
+    return Math.max(afterPct - inp.lethality, 0);
+  }
+  function ePeriodicSlamCd(lvl){
+    return Math.max(4.5 - 0.5 * Math.floor((lvl - 1) / 6), 3.5);
+  }
+  function tokensToFlags(tokens){
+    const flags = [];
+    for (const raw of tokens){
+      const key = raw.trim().toUpperCase().replace(/\s+/g, "").replace(/-/g, "+");
+      if (key === "AA") flags.push(false);
+      else if (key === "W" || key === "W+AA") flags.push(true);
+    }
+    return flags;
+  }
+
+  function deriveStats(inp){
+    const adFromLevels = growthBonus(AD_PER_LEVEL, inp.level);
+
+    const steraksAd = inp.hasSteraks ? (BASE_AD + adFromLevels) * 0.5 : 0;
+    const totalAd = BASE_AD + inp.adFromItems + adFromLevels + steraksAd;
+
+    const asFromLevelsPct = growthBonus(AS_PER_LEVEL, inp.level);
+    const totalBonusAs = asFromLevelsPct / 100;
+    let totalAs = BASE_AS + AS_RATIO * totalBonusAs;
+    totalAs = Math.min(Math.max(totalAs, ATTACK_SPEED_FLOOR), ATTACK_SPEED_CAP);
+    const attackInterval = 1 / totalAs;
+    const windupTime = WINDUP_PCT / totalAs;
+
+    const presetCleaverStacks = inp.hasBlackCleaver ? inp.targetCleaverStacks : 0;
+    const spiritBaseArmor = inp.targetArmor * (1 - presetCleaverStacks * BC_STACK_PCT);
+    const spiritPhysMult = resistMultiplier(effectiveArmor(spiritBaseArmor, 1, inp));
+    const vesselPhysMult = resistMultiplier(effectiveArmor(inp.targetArmor, 1, inp));
+    const spiritMagicMult = resistMultiplier(inp.targetMr);
+
+    const wExtraRaw = Math.max(
+      (W_MAXHP_PCT[inp.wRank] + W_AD_RATIO * (totalAd / 100)) * inp.targetHp,
+      W_MIN_DAMAGE[inp.wRank]
+    );
+
+    const tentacleBase = 9 + (180 - 9) / 17 * (inp.level - 1);
+    const slamOneRaw = (tentacleBase + TENTACLE_AD_RATIO * totalAd + TENTACLE_AP_RATIO * inp.abilityPower)
+                      * (1 + TENTACLE_SMASH_BONUS[inp.tentacleSmashRank]);
+
+    const transmissionPct = E_TRANSMISSION_PCT[inp.eRank] + E_AD_RATIO * (totalAd / 100) + inp.bonusETransferPct;
+    const eSlamCd = ePeriodicSlamCd(inp.level);
+
+    const expectedDamage = inp.targetHp * transmissionPct;
+
+    const dummyBonusHp = inp.giantSlayerHpManual
+      ? inp.giantSlayerHpOverride
+      : Math.min(GIANT_SLAYER_CAP_BONUS_HP, Math.max(0, inp.targetHp - DUMMY_BASE_HP));
+    const giantSlayerPct = inp.hasGiantSlayer
+      ? Math.min(GIANT_SLAYER_MAX_PCT, dummyBonusHp / GIANT_SLAYER_CAP_BONUS_HP * GIANT_SLAYER_MAX_PCT)
+      : 0;
+
+    // Wiki first-pass approximations, unconfirmed against the real client -
+    // same treatment as Giant Slayer until tested otherwise.
+    let lastStandPct = 0;
+    if (inp.hasLastStand){
+      const hpPct = inp.illaoiHpPct / 100;
+      if (hpPct <= LAST_STAND_MAX_HP_PCT) lastStandPct = LAST_STAND_MAX_PCT;
+      else if (hpPct < LAST_STAND_START_HP_PCT){
+        const t = (LAST_STAND_START_HP_PCT - hpPct) / (LAST_STAND_START_HP_PCT - LAST_STAND_MAX_HP_PCT);
+        lastStandPct = LAST_STAND_MIN_PCT + t * (LAST_STAND_MAX_PCT - LAST_STAND_MIN_PCT);
+      }
+    }
+    // Coup de Grace and Cut Down are both dynamic (depend on the Vessel's
+    // live HP) - computed fresh per hit in hitSpirit, not folded in here.
+    const gsMult = 1 + giantSlayerPct + lastStandPct;
+
+    return {
+      totalAd, totalAs, attackInterval, windupTime,
+      spiritBaseArmor, spiritPhysMult, spiritMagicMult,
+      vesselPhysMult, vesselMagicMult: spiritMagicMult,
+      wExtraRaw, tentacleBase, slamOneRaw, transmissionPct, eSlamCd, expectedDamage,
+      giantSlayerPct, lastStandPct, gsMult,
+    };
+  }
+
+  function simulate(empowerFlags, maxAa, inp, d){
+    const timeLimit = inp.timeLimit;
+
+    const aaSchedule = [];
+    const wHitTimes = [];
+    let t = d.windupTime + inp.firstAaDelay, wReadyAt = 0.0, wCasts = 0, pendingEmpower = false;
+
+    if (empowerFlags[0]){
+      pendingEmpower = true;
+      wCasts += 1;
+      wReadyAt = W_COOLDOWN;
+    }
+    while (t <= timeLimit + EPS && aaSchedule.length < maxAa){
+      const empowered = pendingEmpower;
+      pendingEmpower = false;
+      const idx = aaSchedule.length;
+      aaSchedule.push({t, empowered, wanted: !!empowerFlags[idx]});
+      if (empowered) wHitTimes.push(t);
+
+      const wantsNext = (idx + 1 < empowerFlags.length) ? empowerFlags[idx + 1] : false;
+      if (wantsNext){
+
+        const castAt = Math.max(t + inp.wReactionDelay, wReadyAt);
+        wCasts += 1;
+        wReadyAt = castAt + W_COOLDOWN;
+        pendingEmpower = true;
+        t = castAt + d.windupTime;
+      } else {
+        t += d.attackInterval + (empowered ? POST_W_DELAY : 0);
+      }
+    }
+
+    const slamLandings = [];
+    const wq = wHitTimes.slice().sort((a,b) => a - b);
+    for (let tid = 0; tid < inp.tentacleCount; tid++){
+      let wi = 0, freeAt = 0.0, nextAuto = 0.0, lastDone = -1e9, guard = 0;
+      while (guard < 100000){
+        guard++;
+        const wTime = wi < wq.length ? wq[wi] : null;
+        const wStart = wTime !== null ? Math.max(freeAt, wTime) : null;
+        const autoStart = Math.max(freeAt, nextAuto, lastDone + TENTACLE_AUTO_REGAP);
+        let start, source;
+        if (wStart !== null && wStart <= autoStart + EPS){ start = wStart; source = "W-cmd"; wi++; }
+        else { start = autoStart; source = "E-auto"; }
+        if (start > timeLimit + EPS) break;
+        const land = start + inp.tentacleSlamDelay;
+        if (land <= timeLimit + EPS) slamLandings.push({land, tid, source});
+        freeAt = start + inp.tentacleSlamDelay;
+        lastDone = freeAt;
+
+        if (source === "E-auto") nextAuto = start + d.eSlamCd;
+      }
+    }
+
+    let spiritHp = inp.targetHp, vesselHp = inp.targetHp, transferredTotal = 0.0, tetherBrokenAt = null;
+    const events = [];
+    let aaCount = 0, empoweredCount = 0, slamInstances = 0;
+    let recentSlamLands = [];
+    const posthumous = {count: 0, damage: 0.0};
+    let firstStrikeTriggerTime = null;
+
+    let lastWDamageTime = null;
+
+    let tentacleInstanceLastGrant = null;
+
+    let carveStackTimes = [];
+
+    const vesselSeedStacks = (inp.hasBlackCleaver && !inp.loseStacksAfterE) ? inp.targetCleaverStacks : 0;
+    let vesselCarveStackTimes = Array(vesselSeedStacks).fill(0);
+    function activeStacks(list, tm){
+      const kept = list.filter(t => t <= tm + EPS && tm - t < BC_STACK_DURATION - EPS);
+      list.length = 0; list.push(...kept);
+      return Math.min(list.length, BC_MAX_STACKS);
+    }
+    function multFromStacks(baseArmor, stacks){
+      return resistMultiplier(effectiveArmor(baseArmor, 1 - stacks * BC_STACK_PCT, inp));
+    }
+    function addCarveStack(tm){
+      if (inp.hasBlackCleaver) carveStackTimes.push(tm);
+    }
+    function addVesselCarveStack(tm){
+      if (inp.hasBlackCleaver) vesselCarveStackTimes.push(tm);
+    }
+
+    let conquerorStacks = 0, conquerorLastRefresh = -1e9;
+    const conquerorHistory = [];
+    const conquerorAdPerStack = CONQUEROR_AD_MIN
+      + (CONQUEROR_AD_MAX - CONQUEROR_AD_MIN) * (inp.level - 1) / 19;
+    function conquerorAdBonus(when){
+      if (!inp.hasConqueror) return 0;
+      let stacks = 0, refreshT = -1e9;
+      for (let i = conquerorHistory.length - 1; i >= 0; i--){
+        if (conquerorHistory[i].t <= when + EPS){
+          stacks = conquerorHistory[i].stacks;
+          refreshT = conquerorHistory[i].t;
+          break;
+        }
+      }
+      if (when - refreshT >= CONQUEROR_STACK_DURATION - EPS) return 0;
+      return stacks * conquerorAdPerStack;
+    }
+    function addConquerorStacks(tm){
+      if (!inp.hasConqueror) return;
+      if (tm - conquerorLastRefresh >= CONQUEROR_STACK_DURATION - EPS) conquerorStacks = 0;
+      conquerorStacks = Math.min(CONQUEROR_MAX_STACKS, conquerorStacks + CONQUEROR_STACKS_PER_HIT);
+      conquerorLastRefresh = tm;
+      conquerorHistory.push({t: tm, stacks: conquerorStacks});
+    }
+
+    function hitSpirit(when, label, preMit, dmgType, isBonusDamage, conquerorAd, conquerorAdTransfer){
+      dmgType = dmgType || "physical";
+      const isPhys = dmgType === "physical";
+      const spiritHpBefore = Math.max(spiritHp, 0.0);
+      conquerorAd = conquerorAd || 0;
+
+      conquerorAdTransfer = conquerorAdTransfer === undefined ? conquerorAd : conquerorAdTransfer;
+
+      if (conquerorAd > EPS && inp.conquerorVerbose) label += `  [Conqueror +${conquerorAd.toFixed(pctDp())} AD]`;
+      if (Math.abs(conquerorAdTransfer - conquerorAd) > EPS && inp.eTransferVerbose) label += `  [E transfer +${conquerorAdTransfer.toFixed(pctDp())} AD]`;
+      const transmissionPct = d.transmissionPct + E_AD_RATIO * (conquerorAdTransfer / 100);
+
+      const firstStrikeAlreadyActive = firstStrikeTriggerTime !== null;
+      if (inp.hasFirstStrike && firstStrikeTriggerTime === null) firstStrikeTriggerTime = when;
+      const firstStrikeActive = inp.hasFirstStrike && firstStrikeTriggerTime !== null
+        && when - firstStrikeTriggerTime < FIRST_STRIKE_DURATION - EPS;
+      const fsMult = firstStrikeActive ? (1 + FIRST_STRIKE_PCT) : 1;
+      if (firstStrikeActive) label += `  [First Strike +${(FIRST_STRIKE_PCT * 100).toFixed(0)}%]`;
+      if (d.giantSlayerPct > EPS) label += `  [Giant Slayer +${(d.giantSlayerPct * 100).toFixed(pctDp())}%]`;
+      // The Spirit is itself treated as a champion, so Coup de Grace/Cut Down
+      // check its own HP for the direct hit - then the transfer to the real
+      // target checks AGAIN independently against the Vessel's own HP.
+      const coupDeGraceSpirit = inp.hasCoupDeGrace && (spiritHpBefore / inp.targetHp < COUP_DE_GRACE_HP_THRESHOLD - EPS);
+      const coupDeGraceVessel = inp.hasCoupDeGrace && (vesselHp / inp.targetHp < COUP_DE_GRACE_HP_THRESHOLD - EPS);
+      if (coupDeGraceSpirit) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% dmg]`;
+      if (coupDeGraceVessel) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% transfer]`;
+      const cutDownSpirit = inp.hasCutDown && (spiritHpBefore / inp.targetHp > CUT_DOWN_HP_THRESHOLD + EPS);
+      const cutDownVessel = inp.hasCutDown && (vesselHp / inp.targetHp > CUT_DOWN_HP_THRESHOLD + EPS);
+      if (cutDownSpirit) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% dmg]`;
+      if (cutDownVessel) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% transfer]`;
+      const spiritGsMult = d.gsMult + (coupDeGraceSpirit ? COUP_DE_GRACE_PCT : 0) + (cutDownSpirit ? CUT_DOWN_PCT : 0);
+      const vesselGsMult = d.gsMult + (coupDeGraceVessel ? COUP_DE_GRACE_PCT : 0) + (cutDownVessel ? CUT_DOWN_PCT : 0);
+
+      const critMult = inp.hasCritChance && !isBonusDamage ? CRIT_MULT : 1;
+      if (critMult > 1 + EPS) label += `  [Crit x${CRIT_MULT}]`;
+
+      const spiritStacks = isPhys && inp.hasBlackCleaver ? activeStacks(carveStackTimes, when) : 0;
+      if (spiritStacks > 0 && inp.blackCleaverVerbose) label += `  [Spirit Carve x${spiritStacks}, -${spiritStacks * BC_STACK_PCT * 100}% AR]`;
+      const sMult = isPhys ? (inp.hasBlackCleaver ? multFromStacks(d.spiritBaseArmor, spiritStacks) : d.spiritPhysMult) : d.spiritMagicMult;
+      const postMit = preMit * sMult * fsMult * spiritGsMult * critMult;
+      spiritHp -= postMit;
+
+      const vesselStacks = isPhys && inp.hasBlackCleaver ? activeStacks(vesselCarveStackTimes, when) : 0;
+      const vMultBase = isPhys ? (inp.hasBlackCleaver ? multFromStacks(inp.targetArmor, vesselStacks) : d.vesselPhysMult) : d.vesselMagicMult;
+
+      const fsHijacked = firstStrikeActive && isBonusDamage && firstStrikeAlreadyActive;
+
+      const preMitAmped = preMit * fsMult * spiritGsMult * critMult;
+      let redirected;
+      if (fsHijacked){
+
+        if (spiritHpBefore <= EPS){
+          redirected = 0;
+        } else {
+          const postMitNoFS = preMit * sMult * spiritGsMult;
+          const hijackX = postMitNoFS * FIRST_STRIKE_PCT * transmissionPct;
+          redirected = hijackX * (1 + vMultBase) * fsMult;
+        }
+      } else {
+
+        const uncappedTransmitted = preMitAmped * transmissionPct;
+        if (uncappedTransmitted <= spiritHpBefore + EPS){
+          redirected = uncappedTransmitted * vMultBase * fsMult * vesselGsMult;
+        } else {
+          redirected = spiritHpBefore * vMultBase * fsMult * fsMult * vesselGsMult;
+        }
+      }
+      if (redirected > EPS && vesselStacks > 0 && inp.blackCleaverVerbose){
+        label += `  [Vessel Carve x${vesselStacks}, -${vesselStacks * BC_STACK_PCT * 100}% AR]`;
+      }
+
+      transferredTotal += redirected;
+      vesselHp -= redirected;
+
+      const redirectLostToCap = fsHijacked ? 0
+        : Math.max(0.0, preMitAmped * transmissionPct * vMultBase * fsMult * vesselGsMult - redirected);
+      const capMissedKill = redirectLostToCap > EPS && spiritHpBefore > EPS && postMit < spiritHpBefore - EPS;
+
+      const posthumousHit = spiritHpBefore <= EPS;
+
+      const isKillingBlow = spiritHp <= 0 && tetherBrokenAt === null;
+
+      events.push({t: when, label, dmg: postMit, spiritAfter: Math.max(spiritHp, 0.0), redirected, vesselAfter: Math.max(vesselHp, 0.0), capMissedKill, posthumousHit, redirectLostToCap, isKillingBlow, preMit, spiritHpBefore, fsHijacked});
+
+      if (postMit > 0 && posthumousHit){
+        posthumous.count += 1;
+        posthumous.damage += postMit;
+      }
+      if (isKillingBlow) tetherBrokenAt = when;
+      return redirected;
+    }
+
+    function slamFalloffMult(when){
+      recentSlamLands = recentSlamLands.filter(x => x > when - SLAM_FALLOFF_WINDOW - EPS);
+      const mult = Math.max(1 - SLAM_FALLOFF_PER_STACK * recentSlamLands.length, 1 - SLAM_FALLOFF_CAP);
+      recentSlamLands.push(when);
+      return mult;
+    }
+
+    const merged = [
+      ...aaSchedule.map(a => ({t: a.t, prio: 0, kind: "aa", payload: {empowered: a.empowered, wanted: a.wanted}})),
+      ...slamLandings.map(s => ({t: s.land, prio: 1, kind: "slam", payload: {tid: s.tid, source: s.source}})),
+    ];
+    merged.sort((a, b) => (a.t - b.t) || (a.prio - b.prio));
+
+    let i = 0;
+    while (i < merged.length){
+      const tm = merged[i].t;
+      if (tm > timeLimit + EPS) break;
+      if (tetherBrokenAt !== null && tm > tetherBrokenAt + EPS) break;
+
+      const group = [];
+      while (i < merged.length && Math.abs(merged[i].t - tm) <= EPS){ group.push(merged[i]); i++; }
+      const aaEvents = group.filter(g => g.kind === "aa");
+      const slamEvents = group.filter(g => g.kind === "slam");
+
+      for (const ev of aaEvents){
+        aaCount++;
+        const {empowered, wanted} = ev.payload;
+
+        let aaLabel = empowered ? "W" : (wanted ? "AA  [W on cooldown]" : "AA");
+        if (inp.hasConqueror && inp.conquerorVerbose) aaLabel += CONQ_STACK_TAG;
+
+        addCarveStack(tm);
+
+        const aaConqAd = conquerorAdBonus(tm);
+        const aaRedirected = hitSpirit(tm, aaLabel, d.totalAd + aaConqAd, undefined, undefined, aaConqAd);
+        let vesselCarveAdded = false;
+        if (aaRedirected > EPS){ addVesselCarveStack(tm); vesselCarveAdded = true; }
+
+        addConquerorStacks(tm);
+        if (empowered){
+          empoweredCount++;
+          lastWDamageTime = tm;
+          const wConqAd = conquerorAdBonus(tm);
+          const wExtraAdjusted = d.wExtraRaw + W_AD_RATIO * (wConqAd / 100) * inp.targetHp;
+          const wRedirected = hitSpirit(tm, "  W bonus", wExtraAdjusted, undefined, true, wConqAd);
+          if (!vesselCarveAdded && wRedirected > EPS) addVesselCarveStack(tm);
+        }
+      }
+
+      slamInstances += slamEvents.length;
+      let slamCarveAdded = false, slamVesselCarveAdded = false, slamConquerorAdded = false;
+
+      const slamStart = tm - inp.tentacleSlamDelay;
+      const slamAdLockInTime = slamStart + CONQUEROR_TENTACLE_LOCKIN_DELAY;
+      const slamIdentityLockInTime = slamStart + CONQUEROR_IDENTITY_LOCKIN_DELAY;
+      const slamCastReassignedToW = lastWDamageTime !== null
+        && slamIdentityLockInTime > lastWDamageTime + EPS
+        && tm < lastWDamageTime + CONQUEROR_INSTANCE_GRANT_WINDOW - EPS;
+
+      const slamDeniedBySelfInstance = !slamCastReassignedToW
+        && tentacleInstanceLastGrant !== null
+        && tm < tentacleInstanceLastGrant + CONQUEROR_INSTANCE_GRANT_WINDOW - EPS;
+      const slamCanGrant = !slamCastReassignedToW && !slamDeniedBySelfInstance;
+      for (const ev of slamEvents){
+        const mult = slamFalloffMult(tm);
+        const {tid, source} = ev.payload;
+        let label = `Tentacle T${tid + 1} slam (${source})`;
+        if (mult < 1 - EPS) label += `  -${Math.round((1 - mult) * 100)}%`;
+        const slamGrantsStack = !slamConquerorAdded && slamCanGrant;
+        if (inp.hasConqueror && inp.conquerorVerbose && slamGrantsStack) label += CONQ_STACK_TAG;
+
+        const slamConqAd = conquerorAdBonus(slamAdLockInTime);
+
+        const slamConqAdLive = conquerorAdBonus(tm);
+        const slamOneAdjusted = d.slamOneRaw + TENTACLE_AD_RATIO * slamConqAd * (1 + TENTACLE_SMASH_BONUS[inp.tentacleSmashRank]);
+        const redirected = hitSpirit(tm, label, slamOneAdjusted * mult, undefined, true, slamConqAd, slamConqAdLive);
+        if (!slamCarveAdded){ addCarveStack(tm); slamCarveAdded = true; }
+        if (!slamVesselCarveAdded && redirected > EPS){ addVesselCarveStack(tm); slamVesselCarveAdded = true; }
+        if (slamGrantsStack){
+          addConquerorStacks(tm);
+          tentacleInstanceLastGrant = tm;
+          slamConquerorAdded = true;
+        }
+      }
+    }
+
+    const damageToSpirit = Math.min(inp.targetHp - spiritHp, inp.targetHp);
+
+    return {
+      aaSchedule, maxAa, wCasts, events, aaCount, empoweredCount, slamInstances,
+      spiritHp, vesselHp, transferredTotal, tetherBrokenAt, posthumous,
+      damageToSpirit,
+
+      transferFirst: transferredTotal, transferAll: transferredTotal,
+    };
+  }
+
+  const $ = (id) => document.getElementById(id);
+
+  let decimalPlaces = 2;
+  const fmt = (n) => { return Number(n).toLocaleString("en-US", {minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces}); };
+
+  const pctDp = () => decimalPlaces;
+  const pct = (n, base) => (n / base * 100).toFixed(pctDp()) + "%";
+
+  function refreshRankPips(group){
+    const val = +$(group.dataset.target).value;
+    for (const pip of group.querySelectorAll(".pip")){
+      pip.classList.toggle("filled", +pip.dataset.value <= val);
+    }
+  }
+  function initRankPips(){
+    for (const group of document.querySelectorAll(".rank-pips")){
+      const hidden = $(group.dataset.target);
+      const min = +group.dataset.min;
+      refreshRankPips(group);
+      group.addEventListener("click", (e) => {
+        const pip = e.target.closest(".pip");
+        if (!pip) return;
+        const clicked = +pip.dataset.value;
+        const current = +hidden.value;
+
+        const next = (clicked === current && clicked > min) ? clicked - 1 : clicked;
+        hidden.value = next;
+        refreshRankPips(group);
+        hidden.dispatchEvent(new Event("change", {bubbles: true}));
+      });
+    }
+  }
+  initRankPips();
+
+  const DEFAULT_COMBOS =
+`Combo 1: AA, W, AA, AA
+Combo 2: AA, W, AA
+Combo 3: AA, W, AA, AA, W
+Combo 4: AA, W, AA, AA, W, AA
+Combo 6: AA, W
+Just Passive:
+1x AA: AA
+2x AA: AA, AA
+Combo 4: AA, W, AA
+3x AA: AA, AA, AA
+Combo 5: AA, W, W
+1x W: W
+2x W: W, W
+6x AA: AA, AA, AA, AA, AA, AA
+5x AA: AA, AA, AA, AA, AA
+4x AA: AA, AA, AA, AA
+W Finish Fish 1: AA, AA, AA, AA, AA, W
+W Finish Fish 2: AA, AA, AA, AA, W
+W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
+
+  function loadPersisted(){
+    try {
+      const raw = localStorage.getItem("spirit-ledger-state");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function persist(state){
+    try { localStorage.setItem("spirit-ledger-state", JSON.stringify(state)); } catch (e) {}
+  }
+
+  function readInputs(){
+    return {
+      level: +$("level").value,
+      adFromItems: +$("adFromItems").value || 0,
+      abilityPower: +$("abilityPower").value || 0,
+      armorPenPct: (+$("armorPenPct").value || 0) / 100,
+      lethality: +$("lethality").value || 0,
+      bonusETransferPct: (+$("bonusETransferPct").value || 0) / 100,
+      firstAaDelay: +$("firstAaDelay").value || 0,
+      wRank: +$("wRank").value,
+      wReactionDelay: +$("wReactionDelay").value || 0,
+      tentacleCount: Math.max(0, +$("tentacleCount").value || 0),
+      tentacleSmashRank: +$("tentacleSmashRank").value,
+      tentacleSlamDelay: +$("tentacleSlamDelay").value || 1.0,
+      eRank: +$("eRank").value,
+      timeLimit: +$("timeLimit").value || 7.0,
+      targetHp: +$("targetHp").value || 1,
+      targetArmor: +$("targetArmor").value || 0,
+      targetCleaverStacks: +$("targetCleaverStacks").value || 0,
+      loseStacksAfterE: $("loseStacksAfterE").checked,
+      targetMr: 0,
+      hasBlackCleaver: $("hasBlackCleaver").checked,
+      hasSteraks: $("hasSteraks").checked,
+      hasGiantSlayer: $("hasGiantSlayer").checked,
+      giantSlayerHpOverride: +$("giantSlayerHpOverride").value || 0,
+      giantSlayerHpManual: $("giantSlayerHpManual").checked,
+      hasCritChance: $("hasCritChance").checked,
+      decimalPlaces: +$("decimalPlaces").value || 0,
+      hasFirstStrike: $("hasFirstStrike").checked,
+      hasConqueror: $("hasConqueror").checked,
+      hasCoupDeGrace: $("hasCoupDeGrace").checked,
+      hasCutDown: $("hasCutDown").checked,
+      hasLastStand: $("hasLastStand").checked,
+      illaoiHpPct: +$("illaoiHpPct").value || 0,
+      blackCleaverVerbose: $("blackCleaverVerbose").checked,
+      conquerorVerbose: $("conquerorVerbose").checked,
+      eTransferVerbose: $("eTransferVerbose").checked,
+    };
+  }
+
+  function parseCombos(text){
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length);
+    const combos = [];
+    lines.forEach((line, i) => {
+      let name, rest;
+      const ci = line.indexOf(":");
+      if (ci !== -1){ name = line.slice(0, ci).trim() || `Combo ${i+1}`; rest = line.slice(ci+1); }
+      else { name = `Combo ${i+1}`; rest = line; }
+      const tokens = rest.split(",").map(s => s.trim()).filter(s => s.length && s.toUpperCase() !== "TENTACLES");
+      combos.push({name, tokens});
+    });
+    return combos;
+  }
+
+  let state = { inputs: null, combos: null, results: null, activeIdx: 0 };
+
+  function run(){
+    const inp = readInputs();
+    const d = deriveStats(inp);
+    const combos = parseCombos($("combosText").value);
+
+    const results = combos.map(c => {
+      const flags = tokensToFlags(c.tokens);
+      const r = simulate(flags, flags.length, inp, d);
+      return {combo: c, r};
+    });
+
+    const prevActiveIdx = state.activeIdx || 0;
+    const activeIdx = Math.min(prevActiveIdx, Math.max(0, results.length - 1));
+    state = {inp, d, combos, results, activeIdx};
+    persist(buildPersistState(inp));
+    renderResults();
+  }
+
+  function buildPersistState(inp){
+    return {
+      level: inp.level, adFromItems: inp.adFromItems, abilityPower: inp.abilityPower,
+      armorPenPct: inp.armorPenPct, lethality: inp.lethality,
+      bonusETransferPct: inp.bonusETransferPct,
+      firstAaDelay: inp.firstAaDelay,
+      wRank: inp.wRank, wReactionDelay: inp.wReactionDelay,
+      tentacleCount: inp.tentacleCount, tentacleSmashRank: inp.tentacleSmashRank, tentacleSlamDelay: inp.tentacleSlamDelay,
+      eRank: inp.eRank, timeLimit: inp.timeLimit, targetHp: inp.targetHp, targetArmor: inp.targetArmor,
+      targetCleaverStacks: inp.targetCleaverStacks, loseStacksAfterE: inp.loseStacksAfterE,
+      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, decimalPlaces: inp.decimalPlaces, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
+      hasCoupDeGrace: inp.hasCoupDeGrace, hasCutDown: inp.hasCutDown, hasLastStand: inp.hasLastStand, illaoiHpPct: inp.illaoiHpPct,
+      blackCleaverVerbose: inp.blackCleaverVerbose, conquerorVerbose: inp.conquerorVerbose, eTransferVerbose: inp.eTransferVerbose,
+      combosText: $("combosText").value,
+    };
+  }
+
+  function renderResults(){
+    const {inp, d, results} = state;
+    const killers = results.filter(x => x.r.tetherBrokenAt !== null);
+    const nonKillers = results.filter(x => x.r.tetherBrokenAt === null);
+    const best = killers.length ? killers.reduce((a,b) => b.r.transferFirst > a.r.transferFirst ? b : a) : null;
+    const worst = killers.length ? killers.reduce((a,b) => b.r.transferFirst < a.r.transferFirst ? b : a) : null;
+
+    const maxVal = Math.max(1, d.expectedDamage, ...results.map(x => x.r.transferFirst));
+    const expectedMarkerPct = Math.min(100, Math.max(0, d.expectedDamage / maxVal * 100));
+
+    const rankHtml = killers
+      .slice()
+      .sort((a,b) => b.r.transferFirst - a.r.transferFirst)
+      .map(({combo, r}) => {
+        const idx = results.indexOf(results.find(x => x.combo === combo));
+        const isBest = best && combo === best.combo;
+        const isWorst = worst && combo === worst.combo;
+        const cls = ["rank-row"];
+        if (state.activeIdx === idx) cls.push("active");
+        if (isBest) cls.push("crown"); if (isWorst) cls.push("trough");
+        return `<div class="${cls.join(' ')}" data-idx="${idx}" tabindex="0" role="button"
+                     title="${combo.name}: ${fmt(r.transferFirst)} transfer damage">
+          <div>
+            <div class="name">${combo.name}${isBest ? '<span class="badge crown">Highest</span>' : ''}${isWorst ? '<span class="badge trough">Lowest</span>' : ''}</div>
+            <div class="status">dies @ ${fmt(r.tetherBrokenAt, 2)}s</div>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(r.transferFirst / maxVal * 100).toFixed(1)}%"></div>${r.transferFirst > d.expectedDamage ? `<div class="bar-marker" style="left:${expectedMarkerPct.toFixed(1)}%" title="Expected dmg: ${fmt(d.expectedDamage,1)}"></div>` : ''}</div>
+          <div class="amount">${fmt(r.transferFirst, 1)}<small>${pct(r.transferFirst, inp.targetHp)}</small></div>
+        </div>`;
+      }).join("");
+
+    const excludedHtml = nonKillers.length ? `
+      <div class="panel-body" style="padding-top:6px;">
+        <div class="hint" style="margin-bottom:8px;">Spirit survives</div>
+        <div class="excluded-list">
+          ${nonKillers
+            .slice()
+            .sort((a,b) => a.r.spiritHp - b.r.spiritHp)
+            .map(({combo, r}) => {
+              const idx = results.indexOf(results.find(x => x.combo === combo));
+              return `<div class="excluded-row" data-idx="${idx}" tabindex="0" role="button">
+                <div class="name">${combo.name}</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${(r.transferFirst / maxVal * 100).toFixed(1)}%; background:var(--text-faint);"></div></div>
+                <div class="amount">${fmt(r.transferFirst, 1)}<small>${pct(r.transferFirst, inp.targetHp)}</small></div>
+              </div>`;
+            }).join("")}
+        </div>
+      </div>` : "";
+
+    const calloutsHtml = best ? `
+      <div class="callouts">
+        <div class="callout crown">
+          <div class="k">Highest transfer</div>
+          <div class="combo-name">${best.combo.name}</div>
+          <div class="figs"><b>${fmt(best.r.transferFirst)}</b> dmg (${pct(best.r.transferFirst, inp.targetHp)}) &middot; dies @ ${fmt(best.r.tetherBrokenAt,2)}s</div>
+        </div>
+        <div class="callout trough">
+          <div class="k">Lowest transfer</div>
+          <div class="combo-name">${worst.combo.name}</div>
+          <div class="figs"><b>${fmt(worst.r.transferFirst)}</b> dmg (${pct(worst.r.transferFirst, inp.targetHp)}) &middot; dies @ ${fmt(worst.r.tetherBrokenAt,2)}s</div>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px;">Spread: <b class="num">${fmt(best.r.transferFirst - worst.r.transferFirst)}</b> (${pct(best.r.transferFirst - worst.r.transferFirst, inp.targetHp)} of the real target's HP) &mdash; ranked on "only the killing tentacle(s)" transfer.</div>
+    ` : `<div class="empty-note">No combo killed the Spirit within the ${fmt(inp.timeLimit,1)}s tether at these stats &mdash; nothing to rank yet. Try more attacks, a higher level, or more tentacles.</div>`;
+
+    const html = `
+      <div class="stat-strip">
+        <div class="stat-tile"><div class="label">Total AD</div><div class="value">${fmt(d.totalAd,1)}</div></div>
+        <div class="stat-tile"><div class="label">Attack speed</div><div class="value">${fmt(d.totalAs,3)}</div></div>
+        <div class="stat-tile"><div class="label">Slam dmg</div><div class="value">${fmt(d.slamOneRaw,1)}</div></div>
+        <div class="stat-tile"><div class="label">E transmission</div><div class="value">${(d.transmissionPct*100).toFixed(pctDp())}<small>%</small></div></div>
+        <div class="stat-tile"><div class="label">Slam CD</div><div class="value">${fmt(d.eSlamCd,1)}<small>s</small></div></div>
+        <div class="stat-tile ref">
+          <div class="label">Expected dmg <span class="info" tabindex="0">?<span class="tip" role="tooltip">Expected dmg = target HP &times; E transmission % &mdash; the naive tooltip read, before the redirect cap and overkill any actual hit goes through.</span></span></div>
+          <div class="value gold">${fmt(d.expectedDamage,1)}</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Combo ranking</h2><span class="hint">transfer damage to the real target</span></div>
+        <div class="panel-body" style="display:flex; flex-direction:column; gap:2px;">
+          ${rankHtml || '<div class="empty-note">No combo killed the Spirit &mdash; see the list below.</div>'}
+        </div>
+        ${excludedHtml}
+      </div>
+
+      ${calloutsHtml}
+
+      <div id="detailPanel"></div>
+    `;
+    $("results").innerHTML = html;
+
+    document.querySelectorAll(".rank-row, .excluded-row").forEach(el => {
+      el.addEventListener("click", () => { state.activeIdx = +el.dataset.idx; renderResults(); scrollDetailIntoView(); });
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); el.click(); } });
+    });
+
+    renderDetail();
+  }
+
+  function scrollDetailIntoView(){
+    requestAnimationFrame(() => {
+      const el = document.getElementById("detailPanel");
+      if (el) el.scrollIntoView({behavior: "smooth", block: "nearest"});
+    });
+  }
+
+  function renderDetail(){
+    const {inp, d, results, activeIdx} = state;
+    const entry = results[activeIdx] || results[0];
+    if (!entry) return;
+    const {combo, r} = entry;
+
+    function chipFlagClass(ev){
+      return ev.isKillingBlow ? (ev.redirectLostToCap > EPS ? "intended" : "")
+        : ev.capMissedKill ? "unintended"
+        : ev.posthumousHit ? "miss"
+        : "";
+    }
+    const chipParts = [];
+    const chipPartsInput = [];
+    let chipFrameT = null, chipP = 0;
+    for (const ev of r.events){
+      const label = ev.label.trim();
+      if (/^W bonus/.test(label)) continue;
+      const cls = chipFlagClass(ev);
+      if (label.startsWith("Tentacle")){
+        if (ev.t !== chipFrameT){ chipFrameT = ev.t; chipP = 0; }
+        chipP++;
+        chipParts.push(`<span class="chip ${cls}">P${chipP}</span>`);
+      } else {
+        const text = label.startsWith("W") ? "W" : "AA";
+        chipParts.push(`<span class="chip ${cls}">${text}</span>`);
+        chipPartsInput.push(`<span class="chip ${cls}">${text}</span>`);
+      }
+    }
+    const chips = chipParts.length ? chipParts.join("") : '<span class="chip">no attacks &mdash; passive tentacles only</span>';
+    const chipsInput = chipPartsInput.length ? chipPartsInput.join("") : '<span class="chip">no attacks &mdash; passive tentacles only</span>';
+
+    const logRows = r.events.map(ev => {
+      const isKill = ev.isKillingBlow;
+      const wasCapped = ev.redirectLostToCap > EPS;
+
+      const rowClass = isKill ? (wasCapped ? 'kill-capped' : 'kill')
+        : ev.capMissedKill ? 'capmiss'
+        : ev.posthumousHit ? 'kill'
+        : ev.fsHijacked ? 'fs-hijack'
+        : '';
+      const note = (isKill && wasCapped)
+        ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">Transfer damage reduced as intended, however the exact value might be incorrect.</span></span>`
+        : (ev.capMissedKill
+          ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">Transfer damage is wrongfully reduced.</span></span>`
+          : (ev.fsHijacked
+            ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">First Strike bug: this hit's entire transfer is replaced by a different (buggy) formula instead of the normal one.</span></span>`
+            : ''));
+
+      let transferClass = '';
+      let bangNote = '';
+      if (isKill || ev.capMissedKill || ev.fsHijacked){
+        const naiveTransfer = Math.min(ev.dmg, ev.spiritHpBefore) * d.transmissionPct;
+        const delta = ev.redirected - naiveTransfer;
+        if (delta < -EPS){
+          transferClass = 'transfer-under';
+          bangNote = ` <span class="info" tabindex="0">!<span class="tip" role="tooltip">Expected: ${fmt(naiveTransfer,1)}<br>Loss: ${fmt(-delta,1)}</span></span>`;
+        } else if (delta > EPS){
+          transferClass = 'transfer-over';
+          bangNote = ` <span class="info" tabindex="0">!<span class="tip" role="tooltip">Expected: ${fmt(naiveTransfer,1)}<br>Bonus: ${fmt(delta,1)}</span></span>`;
+        }
+      }
+      const transferCell = transferClass
+        ? `${bangNote}<span class="${transferClass}">${fmt(ev.redirected,1)}</span>`
+        : fmt(ev.redirected,1);
+
+      return `<tr class="${rowClass}">
+        <td>${fmt(ev.t,3)}s</td>
+        <td class="ev"><span>${ev.label.trim()}</span>${note}</td>
+        <td>${ev.posthumousHit ? '<span class="miss">miss</span>' : fmt(ev.dmg,1)}</td>
+        <td>${fmt(ev.spiritAfter,1)}</td>
+        <td class="transfer-cell">${transferCell}</td>
+        <td>${fmt(ev.vesselAfter,1)}</td>
+      </tr>`;
+    }).join("");
+
+    let expectedTransferTotal = 0;
+    for (const ev of r.events) if (!ev.posthumousHit) expectedTransferTotal += Math.min(ev.dmg, ev.spiritHpBefore) * d.transmissionPct;
+    const transferDelta = r.transferredTotal - expectedTransferTotal;
+    const transferDeltaPct = expectedTransferTotal > EPS ? (transferDelta / expectedTransferTotal * 100) : 0;
+    const deltaClass = transferDelta < -EPS ? 'coral' : transferDelta > EPS ? 'accent' : '';
+    const deltaSign = transferDelta >= 0 ? '+' : '';
+    const realTransferPct = r.damageToSpirit > EPS ? (r.transferredTotal / r.damageToSpirit * 100) : 0;
+    const expectedPct = d.transmissionPct * 100;
+    const pctDiff = realTransferPct - expectedPct;
+    const pctDiffSign = pctDiff >= 0 ? '+' : '';
+    const damageToSpiritPct = inp.targetHp > EPS ? (r.damageToSpirit / inp.targetHp * 100) : 0;
+    const transferBlock = `
+      <div class="kv"><div class="k">Damage to Spirit</div><div class="v">${fmt(r.damageToSpirit)} <small style="font-weight:500;color:var(--text-faint);">(${damageToSpiritPct.toFixed(pctDp())}% of total Spirit HP)</small></div></div>
+      <div class="kv"><div class="k">Real / expected transfer %</div><div class="v">${realTransferPct.toFixed(pctDp())}% / ${expectedPct.toFixed(pctDp())}% <small style="font-weight:500;color:var(--text-faint);">(${pctDiffSign}${pctDiff.toFixed(pctDp())}%)</small></div></div>
+      <div class="kv"><div class="k">Real / expected transfer damage</div><div class="v">${fmt(r.transferredTotal)} / ${fmt(expectedTransferTotal)}</div></div>
+      <div class="kv"><div class="k">Loss/gain</div><div class="v ${deltaClass}">${deltaSign}${fmt(transferDelta)} (${deltaSign}${transferDeltaPct.toFixed(pctDp())}%)</div></div>
+    `;
+
+    const html = `
+      <div class="panel" id="detailPanelInner">
+        <div class="panel-head">
+          <h2>${combo.name} &mdash; combat log</h2>
+          <span class="hint">${r.tetherBrokenAt !== null ? `Spirit dies @ ${fmt(r.tetherBrokenAt,3)}s` : `Spirit survives, ${fmt(r.spiritHp,1)} / ${fmt(inp.targetHp,0)} HP left`}</span>
+        </div>
+        <div class="panel-body">
+          <div class="chip-row-label">Combo:</div>
+          <div class="combo-chip-row">${chipsInput}</div>
+          <hr class="hr" style="margin:10px 0;">
+          <div class="chip-row-label">Real Sequence:</div>
+          <div class="combo-chip-row">${chips}</div>
+
+          <div class="kv-grid" style="margin-top:16px;">
+            ${transferBlock}
+          </div>
+
+          <div class="log-wrap" style="margin-top:16px;">
+            <table class="log">
+              <thead><tr><th>Time</th><th>Event</th><th>Dmg to Spirit</th><th>Spirit HP after</th><th>Transfer dmg</th><th>Vessel HP after</th></tr></thead>
+              <tbody>${logRows || '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);">No damage landed in this window.</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+    $("detailPanel").innerHTML = html;
+  }
+
+  function applySavedState(saved){
+    if (!saved) return;
+    try {
+      if (saved.level) $("level").value = saved.level;
+      if (saved.adFromItems !== undefined) $("adFromItems").value = saved.adFromItems;
+      if (saved.abilityPower !== undefined) $("abilityPower").value = saved.abilityPower;
+      if (saved.armorPenPct !== undefined) $("armorPenPct").value = saved.armorPenPct * 100;
+      if (saved.lethality !== undefined) $("lethality").value = saved.lethality;
+      if (saved.bonusETransferPct !== undefined) $("bonusETransferPct").value = saved.bonusETransferPct * 100;
+      if (saved.wRank) $("wRank").value = saved.wRank;
+      if (saved.firstAaDelay !== undefined) $("firstAaDelay").value = saved.firstAaDelay;
+      if (saved.wReactionDelay !== undefined) $("wReactionDelay").value = saved.wReactionDelay;
+      if (saved.tentacleCount !== undefined) $("tentacleCount").value = saved.tentacleCount;
+      if (saved.tentacleSmashRank !== undefined) $("tentacleSmashRank").value = saved.tentacleSmashRank;
+      if (saved.tentacleSlamDelay !== undefined) $("tentacleSlamDelay").value = saved.tentacleSlamDelay;
+      if (saved.eRank) $("eRank").value = saved.eRank;
+      if (saved.timeLimit !== undefined) $("timeLimit").value = saved.timeLimit;
+      if (saved.targetHp !== undefined) $("targetHp").value = saved.targetHp;
+      if (saved.targetArmor !== undefined) $("targetArmor").value = saved.targetArmor;
+      if (saved.targetCleaverStacks !== undefined) $("targetCleaverStacks").value = saved.targetCleaverStacks;
+      if (saved.loseStacksAfterE !== undefined) $("loseStacksAfterE").checked = saved.loseStacksAfterE;
+      if (saved.hasBlackCleaver !== undefined) $("hasBlackCleaver").checked = saved.hasBlackCleaver;
+      if (saved.hasSteraks !== undefined) $("hasSteraks").checked = saved.hasSteraks;
+      if (saved.hasGiantSlayer !== undefined) $("hasGiantSlayer").checked = saved.hasGiantSlayer;
+      if (saved.giantSlayerHpOverride !== undefined) $("giantSlayerHpOverride").value = saved.giantSlayerHpOverride;
+      if (saved.giantSlayerHpManual !== undefined) $("giantSlayerHpManual").checked = saved.giantSlayerHpManual;
+      if (saved.hasCritChance !== undefined) $("hasCritChance").checked = saved.hasCritChance;
+      if (saved.decimalPlaces !== undefined) $("decimalPlaces").value = saved.decimalPlaces;
+      if (saved.hasFirstStrike !== undefined) $("hasFirstStrike").checked = saved.hasFirstStrike;
+      if (saved.hasConqueror !== undefined) $("hasConqueror").checked = saved.hasConqueror;
+      if (saved.hasCoupDeGrace !== undefined) $("hasCoupDeGrace").checked = saved.hasCoupDeGrace;
+      if (saved.hasCutDown !== undefined) $("hasCutDown").checked = saved.hasCutDown;
+      if (saved.hasLastStand !== undefined) $("hasLastStand").checked = saved.hasLastStand;
+      if (saved.illaoiHpPct !== undefined) $("illaoiHpPct").value = saved.illaoiHpPct;
+      if (saved.blackCleaverVerbose !== undefined) $("blackCleaverVerbose").checked = saved.blackCleaverVerbose;
+      if (saved.conquerorVerbose !== undefined) $("conquerorVerbose").checked = saved.conquerorVerbose;
+      if (saved.eTransferVerbose !== undefined) $("eTransferVerbose").checked = saved.eTransferVerbose;
+      if (saved.combosText) $("combosText").value = saved.combosText;
+    } catch(e){}
+    for (const group of document.querySelectorAll(".rank-pips")) refreshRankPips(group);
+  }
+  applySavedState(loadPersisted());
+  if (!$("combosText").value) $("combosText").value = DEFAULT_COMBOS;
+
+  function applyDecimalPlaces(){ decimalPlaces = Math.min(3, Math.max(0, +$("decimalPlaces").value || 0)); }
+  applyDecimalPlaces();
+  $("decimalPlaces").addEventListener("input", applyDecimalPlaces);
+
+  function applyGiantSlayerBonusHp(){
+    const manual = $("giantSlayerHpManual").checked;
+    const input = $("giantSlayerHpOverride");
+    input.disabled = !manual;
+    if (!manual && $("hasGiantSlayer").checked){
+      const auto = Math.min(1500, Math.max(0, (+$("targetHp").value || 0) - 1000));
+      input.value = auto;
+    }
+  }
+  applyGiantSlayerBonusHp();
+  $("targetHp").addEventListener("input", applyGiantSlayerBonusHp);
+  $("hasGiantSlayer").addEventListener("change", applyGiantSlayerBonusHp);
+  $("giantSlayerHpManual").addEventListener("change", () => {
+    if ($("giantSlayerHpManual").checked) $("giantSlayerHpOverride").value = 0;
+    applyGiantSlayerBonusHp();
+  });
+
+  function applyFirstStrikeWarning(){
+    $("firstStrikeWarning").style.display = $("hasFirstStrike").checked ? "block" : "none";
+  }
+  applyFirstStrikeWarning();
+  $("hasFirstStrike").addEventListener("change", applyFirstStrikeWarning);
+
+  function applyConquerorWarning(){
+    $("conquerorWarning").style.display = $("hasConqueror").checked ? "block" : "none";
+  }
+  applyConquerorWarning();
+  $("hasConqueror").addEventListener("change", applyConquerorWarning);
+
+  document.querySelectorAll(".warn-btn").forEach(btn => {
+    const tip = btn.querySelector(".tip");
+    if (!tip) return;
+    let hideTimer = null;
+    const show = () => { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } tip.classList.add("tip-open"); };
+    const scheduleHide = () => { hideTimer = setTimeout(() => tip.classList.remove("tip-open"), 300); };
+    btn.addEventListener("mouseenter", show);
+    btn.addEventListener("mouseleave", scheduleHide);
+    tip.addEventListener("mouseenter", show);
+    tip.addEventListener("mouseleave", scheduleHide);
+  });
+
+  $("resetCombos").addEventListener("click", () => {
+    $("combosText").value = DEFAULT_COMBOS;
+    $("combosText").dispatchEvent(new Event("input", {bubbles: true}));
+  });
+
+  async function flashButtonText(btn, text, revertAfterMs){
+    const original = btn.textContent;
+    btn.textContent = text;
+    await new Promise(r => setTimeout(r, revertAfterMs));
+    btn.textContent = original;
+  }
+  $("debugCopy").addEventListener("click", async () => {
+    const inp = readInputs();
+    const snapshot = JSON.stringify(buildPersistState(inp), null, 2);
+    try {
+      await navigator.clipboard.writeText(snapshot);
+      flashButtonText($("debugCopy"), "Copied!", 1200);
+    } catch (e) {
+      window.prompt("Clipboard access failed - copy this manually:", snapshot);
+    }
+  });
+  $("debugPaste").addEventListener("click", async () => {
+    let text;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch (e) {
+      text = window.prompt("Clipboard access failed - paste the Debug Copy text here:", "");
+    }
+    if (!text) return;
+    let saved;
+    try {
+      saved = JSON.parse(text);
+    } catch (e) {
+      window.alert("That doesn't look like a valid Debug Copy snapshot (not valid JSON).");
+      return;
+    }
+    applySavedState(saved);
+    applyDecimalPlaces();
+    applyFirstStrikeWarning();
+    applyConquerorWarning();
+    applyGiantSlayerBonusHp();
+    $("combosText").dispatchEvent(new Event("input", {bubbles: true}));
+    flashButtonText($("debugPaste"), "Pasted!", 1200);
+  });
+
+  function makeExclusive(idA, idB){
+    $(idA).addEventListener("change", () => { if ($(idA).checked) { $(idB).checked = false; $(idB).dispatchEvent(new Event("change", {bubbles: true})); } });
+    $(idB).addEventListener("change", () => { if ($(idB).checked) { $(idA).checked = false; $(idA).dispatchEvent(new Event("change", {bubbles: true})); } });
+  }
+  makeExclusive("hasFirstStrike", "hasConqueror");
+  makeExclusive("hasGiantSlayer", "hasBlackCleaver");
+  makeExclusive("hasCoupDeGrace", "hasCutDown");
+  makeExclusive("hasCoupDeGrace", "hasLastStand");
+  makeExclusive("hasCutDown", "hasLastStand");
+
+  $("level").addEventListener("input", () => { $("v-level").textContent = $("level").value; });
+  $("bonusETransferPct").addEventListener("input", () => { $("v-bonusETransfer").textContent = $("bonusETransferPct").value; });
+  $("illaoiHpPct").addEventListener("input", () => { $("v-illaoiHpPct").textContent = $("illaoiHpPct").value + "%"; });
+  $("v-level").textContent = $("level").value;
+  $("v-bonusETransfer").textContent = $("bonusETransferPct").value;
+  $("v-illaoiHpPct").textContent = $("illaoiHpPct").value + "%";
+
+  function effectiveTheme(){
+    const saved = localStorage.getItem("spirit-ledger-theme");
+    return (saved === "light" || saved === "dark") ? saved : "dark";
+  }
+  function refreshThemeButton(){
+    $("themeToggle").textContent = effectiveTheme() === "dark" ? "Light mode" : "Dark mode";
+  }
+  $("themeToggle").addEventListener("click", () => {
+    const next = effectiveTheme() === "dark" ? "light" : "dark";
+    try { localStorage.setItem("spirit-ledger-theme", next); } catch (e) {}
+    document.documentElement.setAttribute("data-theme", next);
+    refreshThemeButton();
+  });
+  refreshThemeButton();
+
+  const controlsEl = document.querySelector(".controls");
+  let runDebounce = null;
+  function scheduleRun(){
+    clearTimeout(runDebounce);
+    runDebounce = setTimeout(run, 250);
+  }
+  controlsEl.addEventListener("input", scheduleRun);
+  controlsEl.addEventListener("change", scheduleRun);
+
+  run();
+})();
+</script>
