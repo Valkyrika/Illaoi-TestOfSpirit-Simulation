@@ -512,6 +512,23 @@
             </label>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; flex-wrap:wrap;">
               <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin:0;">
+                <input type="checkbox" id="hasShojin" style="width:auto; accent-color:var(--accent);">
+                Spear of Shojin
+              </label>
+              <span style="display:flex; align-items:center; gap:4px; flex:none; font-size:12px; color:var(--text-dim);">
+                <span style="font-size:10.5px;">Stacks:</span>
+                <div class="rank-pips" data-target="shojinPresetStacks" data-min="0" style="gap:3px;">
+                  <button type="button" class="pip" data-value="1" style="width:13px; height:13px;"></button>
+                  <button type="button" class="pip" data-value="2" style="width:13px; height:13px;"></button>
+                  <button type="button" class="pip" data-value="3" style="width:13px; height:13px;"></button>
+                  <button type="button" class="pip" data-value="4" style="width:13px; height:13px;"></button>
+                </div>
+                <input type="hidden" id="shojinPresetStacks" value="0">
+                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Due to no Q and R in the simulation, Shojin stacks are just set here and will be used inside the calculation without expiration timer. Could be hard to redo in-game unless W is used to extend the timer.</span></span>
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin:0;">
                 <input type="checkbox" id="hasGiantSlayer" style="width:auto; accent-color:var(--accent);">
                 Giant Slayer
               </label>
@@ -519,7 +536,7 @@
                 <span style="font-size:10.5px;">Bonus HP:</span>
                 <input type="checkbox" id="giantSlayerHpManual" style="width:auto; accent-color:var(--accent);" title="Manual override for real champion testing">
                 <input type="number" id="giantSlayerHpOverride" value="0" step="100" min="0" max="1500" style="width:58px; flex:none; padding:5px 6px; font-size:12px;">
-                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Any HP over 1000 is regarded as Bonus HP for Target Dummies.<br>Bonus HP: unchecked, this automatically shows the target dummy's HP above 1000 (capped at 1500). Checked, you set Bonus HP manually instead - not added on top of the currently selected Target Dummy HP - starting at 0.</span></span>
+                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Everything above 1000 HP is considered Bonus HP for target dummies. Use this field if you want to do real champion testing. The added HP here is NOT added on top of the selected HP above.</span></span>
               </span>
             </div>
             <hr class="hr" style="margin:10px 0;">
@@ -531,7 +548,7 @@
             <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
               <input type="checkbox" id="hasCritChance" style="width:auto; accent-color:var(--accent);">
               100% Crit Chance
-              <span class="info" tabindex="0">?<span class="tip" role="tooltip">All autos and W's own empowered attack always crit for 200% damage.<br>Confirmed against the real client: W's bonus damage does NOT crit (tagged as spell damage per the wiki). Tentacle slams are assumed not to crit either, same reasoning, not separately tested yet.</span></span>
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">W bonus damage does not crit.</span></span>
             </label>
           </fieldset>
 
@@ -623,7 +640,7 @@
           <fieldset>
             <legend>Settings</legend>
             <div class="field">
-              <label>Slam animation (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not supposed to be used.</span></span></label>
+              <label>Slam animation (s) <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not supposed to be used, this is not tested yet and probably breaks the simulation when changed.</span></span></label>
               <input type="number" id="tentacleSlamDelay" value="1.0" step="0.1" min="0.1">
             </div>
             <div class="field">
@@ -657,6 +674,11 @@
               Conqueror E-% Verbose
               <span class="info" tabindex="0">?<span class="tip" role="tooltip">Lists E-Transfer AD on combat logs ONLY when it does not match the Conqueror stacks from the source of the transfer.</span></span>
             </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; margin-top:8px;">
+              <input type="checkbox" id="compactVerbose" checked style="width:auto; accent-color:var(--accent);">
+              Compact Verbose
+              <span class="info" tabindex="0">?<span class="tip" role="tooltip">Shortens every verbose tag in the combat log to its bare minimum (e.g. [Shojin x4, +12% transfer] becomes [Shojin x4]). Purely visual, no effect on the math.</span></span>
+            </label>
             <div class="field" style="margin-top:8px;">
               <label>Decimals <span class="info" tabindex="0">?<span class="tip" role="tooltip">How many decimal places every combat log value displays with. Purely visual - every value is still computed and stored at full precision, this can't change the math.</span></span></label>
               <input type="number" id="decimalPlaces" value="1" step="1" min="0" max="3">
@@ -670,7 +692,7 @@
           <h2>Combos</h2>
           <div style="display:flex; align-items:center; gap:8px;">
             <button type="button" id="resetCombos" class="reset-btn">Reset</button>
-            <span class="info" tabindex="0">?<span class="tip" role="tooltip">Tentacle slams aren't written here &mdash; they land automatically from W hits and Illaoi's passive timer. Starting a combo with W means W was precast before engaging, so that opening swing is already empowered; any W written after that still reacts to a landed hit, which is the realistic/efficient way to use it in practice.</span></span>
+            <span class="info" tabindex="0">?<span class="tip" role="tooltip">Slams occur automatically.</span></span>
           </div>
         </div>
         <div class="panel-body">
@@ -730,6 +752,9 @@
   const LAST_STAND_MAX_PCT = 0.11;
   const LAST_STAND_START_HP_PCT = 0.60;
   const LAST_STAND_MAX_HP_PCT = 0.30;
+
+  const SHOJIN_PCT_PER_STACK = 0.03;
+  const SHOJIN_MAX_STACKS = 4;
 
   const CRIT_MULT = 2.0;
 
@@ -833,12 +858,16 @@
     // live HP) - computed fresh per hit in hitSpirit, not folded in here.
     const gsMult = 1 + giantSlayerPct + lastStandPct;
 
+    // Fixed for the whole simulation - no in-combo stacking modeled, just
+    // whatever preset stack count was selected.
+    const shojinStacks = inp.hasShojin ? Math.min(SHOJIN_MAX_STACKS, inp.shojinPresetStacks) : 0;
+
     return {
       totalAd, totalAs, attackInterval, windupTime,
       spiritBaseArmor, spiritPhysMult, spiritMagicMult,
       vesselPhysMult, vesselMagicMult: spiritMagicMult,
       wExtraRaw, tentacleBase, slamOneRaw, transmissionPct, eSlamCd, expectedDamage,
-      giantSlayerPct, lastStandPct, gsMult,
+      giantSlayerPct, lastStandPct, gsMult, shojinStacks,
     };
   }
 
@@ -951,7 +980,8 @@
       conquerorHistory.push({t: tm, stacks: conquerorStacks});
     }
 
-    function hitSpirit(when, label, preMit, dmgType, isBonusDamage, conquerorAd, conquerorAdTransfer){
+    function hitSpirit(when, label, preMit, dmgType, isBonusDamage, conquerorAd, conquerorAdTransfer, isAbilityDamage){
+      if (isAbilityDamage === undefined) isAbilityDamage = isBonusDamage;
       dmgType = dmgType || "physical";
       const isPhys = dmgType === "physical";
       const spiritHpBefore = Math.max(spiritHp, 0.0);
@@ -959,8 +989,12 @@
 
       conquerorAdTransfer = conquerorAdTransfer === undefined ? conquerorAd : conquerorAdTransfer;
 
-      if (conquerorAd > EPS && inp.conquerorVerbose) label += `  [Conqueror +${conquerorAd.toFixed(pctDp())} AD]`;
-      if (Math.abs(conquerorAdTransfer - conquerorAd) > EPS && inp.eTransferVerbose) label += `  [E transfer +${conquerorAdTransfer.toFixed(pctDp())} AD]`;
+      if (conquerorAd > EPS && inp.conquerorVerbose) label += inp.compactVerbose
+        ? `  [Conq ${conquerorAd.toFixed(pctDp())} AD]`
+        : `  [Conqueror +${conquerorAd.toFixed(pctDp())} AD]`;
+      if (Math.abs(conquerorAdTransfer - conquerorAd) > EPS && inp.eTransferVerbose) label += inp.compactVerbose
+        ? `  [E-xfer ${conquerorAdTransfer.toFixed(pctDp())} AD]`
+        : `  [E transfer +${conquerorAdTransfer.toFixed(pctDp())} AD]`;
       const transmissionPct = d.transmissionPct + E_AD_RATIO * (conquerorAdTransfer / 100);
 
       const firstStrikeAlreadyActive = firstStrikeTriggerTime !== null;
@@ -968,29 +1002,59 @@
       const firstStrikeActive = inp.hasFirstStrike && firstStrikeTriggerTime !== null
         && when - firstStrikeTriggerTime < FIRST_STRIKE_DURATION - EPS;
       const fsMult = firstStrikeActive ? (1 + FIRST_STRIKE_PCT) : 1;
-      if (firstStrikeActive) label += `  [First Strike +${(FIRST_STRIKE_PCT * 100).toFixed(0)}%]`;
-      if (d.giantSlayerPct > EPS) label += `  [Giant Slayer +${(d.giantSlayerPct * 100).toFixed(pctDp())}%]`;
+      if (firstStrikeActive) label += inp.compactVerbose ? `  [FS]` : `  [First Strike +${(FIRST_STRIKE_PCT * 100).toFixed(0)}%]`;
+      if (d.giantSlayerPct > EPS) label += inp.compactVerbose
+        ? `  [GS ${(d.giantSlayerPct * 100).toFixed(pctDp())}%]`
+        : `  [Giant Slayer +${(d.giantSlayerPct * 100).toFixed(pctDp())}%]`;
       // The Spirit is itself treated as a champion, so Coup de Grace/Cut Down
       // check its own HP for the direct hit - then the transfer to the real
       // target checks AGAIN independently against the Vessel's own HP.
       const coupDeGraceSpirit = inp.hasCoupDeGrace && (spiritHpBefore / inp.targetHp < COUP_DE_GRACE_HP_THRESHOLD - EPS);
       const coupDeGraceVessel = inp.hasCoupDeGrace && (vesselHp / inp.targetHp < COUP_DE_GRACE_HP_THRESHOLD - EPS);
-      if (coupDeGraceSpirit) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% dmg]`;
-      if (coupDeGraceVessel) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% transfer]`;
+      if (inp.compactVerbose){
+        if (coupDeGraceSpirit || coupDeGraceVessel) label += `  [CdG]`;
+      } else {
+        if (coupDeGraceSpirit) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% dmg]`;
+        if (coupDeGraceVessel) label += `  [Coup de Grace +${(COUP_DE_GRACE_PCT * 100).toFixed(0)}% transfer]`;
+      }
       const cutDownSpirit = inp.hasCutDown && (spiritHpBefore / inp.targetHp > CUT_DOWN_HP_THRESHOLD + EPS);
       const cutDownVessel = inp.hasCutDown && (vesselHp / inp.targetHp > CUT_DOWN_HP_THRESHOLD + EPS);
-      if (cutDownSpirit) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% dmg]`;
-      if (cutDownVessel) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% transfer]`;
+      if (inp.compactVerbose){
+        if (cutDownSpirit || cutDownVessel) label += `  [CD]`;
+      } else {
+        if (cutDownSpirit) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% dmg]`;
+        if (cutDownVessel) label += `  [Cut Down +${(CUT_DOWN_PCT * 100).toFixed(0)}% transfer]`;
+      }
+      // Shojin's direct-damage boost only applies to genuine ability damage
+      // (W bonus, tentacle slams - isBonusDamage) - but the E transfer is
+      // always considered ability damage from E's own cast-instance, so it
+      // benefits from the current stacks regardless of what triggered it.
+      const shojinPct = inp.hasShojin ? d.shojinStacks * SHOJIN_PCT_PER_STACK : 0;
+      if (shojinPct > EPS){
+        if (inp.compactVerbose){
+          label += `  [Shojin x${d.shojinStacks}]`;
+        } else {
+          if (isAbilityDamage) label += `  [Shojin x${d.shojinStacks}, +${(shojinPct * 100).toFixed(0)}% dmg]`;
+          label += `  [Shojin x${d.shojinStacks}, +${(shojinPct * 100).toFixed(0)}% transfer]`;
+        }
+      }
       const spiritGsMult = d.gsMult + (coupDeGraceSpirit ? COUP_DE_GRACE_PCT : 0) + (cutDownSpirit ? CUT_DOWN_PCT : 0);
-      const vesselGsMult = d.gsMult + (coupDeGraceVessel ? COUP_DE_GRACE_PCT : 0) + (cutDownVessel ? CUT_DOWN_PCT : 0);
+      const vesselGsMult = d.gsMult + (coupDeGraceVessel ? COUP_DE_GRACE_PCT : 0) + (cutDownVessel ? CUT_DOWN_PCT : 0) + shojinPct;
+      // Applied as its own standalone multiplier on postMit only (not folded
+      // into spiritGsMult/preMitAmped) so it doesn't also compound into the
+      // transfer a second time via vesselGsMult above - the transfer already
+      // gets its own single Shojin application there, for every hit type.
+      const shojinDirectMult = isAbilityDamage ? 1 + shojinPct : 1;
 
       const critMult = inp.hasCritChance && !isBonusDamage ? CRIT_MULT : 1;
       if (critMult > 1 + EPS) label += `  [Crit x${CRIT_MULT}]`;
 
       const spiritStacks = isPhys && inp.hasBlackCleaver ? activeStacks(carveStackTimes, when) : 0;
-      if (spiritStacks > 0 && inp.blackCleaverVerbose) label += `  [Spirit Carve x${spiritStacks}, -${spiritStacks * BC_STACK_PCT * 100}% AR]`;
+      if (spiritStacks > 0 && inp.blackCleaverVerbose) label += inp.compactVerbose
+        ? `  [sCarve x${spiritStacks}]`
+        : `  [Spirit Carve x${spiritStacks}, -${spiritStacks * BC_STACK_PCT * 100}% AR]`;
       const sMult = isPhys ? (inp.hasBlackCleaver ? multFromStacks(d.spiritBaseArmor, spiritStacks) : d.spiritPhysMult) : d.spiritMagicMult;
-      const postMit = preMit * sMult * fsMult * spiritGsMult * critMult;
+      const postMit = preMit * sMult * fsMult * spiritGsMult * critMult * shojinDirectMult;
       spiritHp -= postMit;
 
       const vesselStacks = isPhys && inp.hasBlackCleaver ? activeStacks(vesselCarveStackTimes, when) : 0;
@@ -1019,7 +1083,9 @@
         }
       }
       if (redirected > EPS && vesselStacks > 0 && inp.blackCleaverVerbose){
-        label += `  [Vessel Carve x${vesselStacks}, -${vesselStacks * BC_STACK_PCT * 100}% AR]`;
+        label += inp.compactVerbose
+          ? `  [vCarve x${vesselStacks}]`
+          : `  [Vessel Carve x${vesselStacks}, -${vesselStacks * BC_STACK_PCT * 100}% AR]`;
       }
 
       transferredTotal += redirected;
@@ -1077,7 +1143,7 @@
         addCarveStack(tm);
 
         const aaConqAd = conquerorAdBonus(tm);
-        const aaRedirected = hitSpirit(tm, aaLabel, d.totalAd + aaConqAd, undefined, undefined, aaConqAd);
+        const aaRedirected = hitSpirit(tm, aaLabel, d.totalAd + aaConqAd, undefined, undefined, aaConqAd, undefined, empowered);
         let vesselCarveAdded = false;
         if (aaRedirected > EPS){ addVesselCarveStack(tm); vesselCarveAdded = true; }
 
@@ -1232,7 +1298,10 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       giantSlayerHpOverride: +$("giantSlayerHpOverride").value || 0,
       giantSlayerHpManual: $("giantSlayerHpManual").checked,
       hasCritChance: $("hasCritChance").checked,
+      hasShojin: $("hasShojin").checked,
+      shojinPresetStacks: +$("shojinPresetStacks").value || 0,
       decimalPlaces: +$("decimalPlaces").value || 0,
+      compactVerbose: $("compactVerbose").checked,
       hasFirstStrike: $("hasFirstStrike").checked,
       hasConqueror: $("hasConqueror").checked,
       hasCoupDeGrace: $("hasCoupDeGrace").checked,
@@ -1289,7 +1358,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       tentacleCount: inp.tentacleCount, tentacleSmashRank: inp.tentacleSmashRank, tentacleSlamDelay: inp.tentacleSlamDelay,
       eRank: inp.eRank, timeLimit: inp.timeLimit, targetHp: inp.targetHp, targetArmor: inp.targetArmor,
       targetCleaverStacks: inp.targetCleaverStacks, loseStacksAfterE: inp.loseStacksAfterE,
-      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, decimalPlaces: inp.decimalPlaces, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
+      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, hasShojin: inp.hasShojin, shojinPresetStacks: inp.shojinPresetStacks, decimalPlaces: inp.decimalPlaces, compactVerbose: inp.compactVerbose, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
       hasCoupDeGrace: inp.hasCoupDeGrace, hasCutDown: inp.hasCutDown, hasLastStand: inp.hasLastStand, illaoiHpPct: inp.illaoiHpPct,
       blackCleaverVerbose: inp.blackCleaverVerbose, conquerorVerbose: inp.conquerorVerbose, eTransferVerbose: inp.eTransferVerbose,
       combosText: $("combosText").value,
@@ -1311,8 +1380,8 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       .sort((a,b) => b.r.transferFirst - a.r.transferFirst)
       .map(({combo, r}) => {
         const idx = results.indexOf(results.find(x => x.combo === combo));
-        const isBest = best && combo === best.combo;
-        const isWorst = worst && combo === worst.combo;
+        const isBest = best && Math.abs(r.transferFirst - best.r.transferFirst) < EPS;
+        const isWorst = worst && Math.abs(r.transferFirst - worst.r.transferFirst) < EPS && !isBest;
         const cls = ["rank-row"];
         if (state.activeIdx === idx) cls.push("active");
         if (isBest) cls.push("crown"); if (isWorst) cls.push("trough");
@@ -1345,21 +1414,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
         </div>
       </div>` : "";
 
-    const calloutsHtml = best ? `
-      <div class="callouts">
-        <div class="callout crown">
-          <div class="k">Highest transfer</div>
-          <div class="combo-name">${best.combo.name}</div>
-          <div class="figs"><b>${fmt(best.r.transferFirst)}</b> dmg (${pct(best.r.transferFirst, inp.targetHp)}) &middot; dies @ ${fmt(best.r.tetherBrokenAt,2)}s</div>
-        </div>
-        <div class="callout trough">
-          <div class="k">Lowest transfer</div>
-          <div class="combo-name">${worst.combo.name}</div>
-          <div class="figs"><b>${fmt(worst.r.transferFirst)}</b> dmg (${pct(worst.r.transferFirst, inp.targetHp)}) &middot; dies @ ${fmt(worst.r.tetherBrokenAt,2)}s</div>
-        </div>
-      </div>
-      <div class="hint" style="margin-top:10px;">Spread: <b class="num">${fmt(best.r.transferFirst - worst.r.transferFirst)}</b> (${pct(best.r.transferFirst - worst.r.transferFirst, inp.targetHp)} of the real target's HP) &mdash; ranked on "only the killing tentacle(s)" transfer.</div>
-    ` : `<div class="empty-note">No combo killed the Spirit within the ${fmt(inp.timeLimit,1)}s tether at these stats &mdash; nothing to rank yet. Try more attacks, a higher level, or more tentacles.</div>`;
+    const calloutsHtml = "";
 
     const html = `
       <div class="stat-strip">
@@ -1377,7 +1432,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       <div class="panel">
         <div class="panel-head"><h2>Combo ranking</h2><span class="hint">transfer damage to the real target</span></div>
         <div class="panel-body" style="display:flex; flex-direction:column; gap:2px;">
-          ${rankHtml || '<div class="empty-note">No combo killed the Spirit &mdash; see the list below.</div>'}
+          ${rankHtml || '<div class="empty-note">No combo killed the Spirit</div>'}
         </div>
         ${excludedHtml}
       </div>
@@ -1445,7 +1500,7 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
         : ev.fsHijacked ? 'fs-hijack'
         : '';
       const note = (isKill && wasCapped)
-        ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">Transfer damage reduced as intended, however the exact value might be incorrect.</span></span>`
+        ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">Transfer damage reduced as intended, however the game almost always reduces it incorrectly.</span></span>`
         : (ev.capMissedKill
           ? ` <span class="info" tabindex="0">?<span class="tip" role="tooltip">Transfer damage is wrongfully reduced.</span></span>`
           : (ev.fsHijacked
@@ -1553,7 +1608,10 @@ W Finish Fish 3: AA, AA, AA, AA, AA, AA, W`;
       if (saved.giantSlayerHpOverride !== undefined) $("giantSlayerHpOverride").value = saved.giantSlayerHpOverride;
       if (saved.giantSlayerHpManual !== undefined) $("giantSlayerHpManual").checked = saved.giantSlayerHpManual;
       if (saved.hasCritChance !== undefined) $("hasCritChance").checked = saved.hasCritChance;
+      if (saved.hasShojin !== undefined) $("hasShojin").checked = saved.hasShojin;
+      if (saved.shojinPresetStacks !== undefined) $("shojinPresetStacks").value = saved.shojinPresetStacks;
       if (saved.decimalPlaces !== undefined) $("decimalPlaces").value = saved.decimalPlaces;
+      if (saved.compactVerbose !== undefined) $("compactVerbose").checked = saved.compactVerbose;
       if (saved.hasFirstStrike !== undefined) $("hasFirstStrike").checked = saved.hasFirstStrike;
       if (saved.hasConqueror !== undefined) $("hasConqueror").checked = saved.hasConqueror;
       if (saved.hasCoupDeGrace !== undefined) $("hasCoupDeGrace").checked = saved.hasCoupDeGrace;
