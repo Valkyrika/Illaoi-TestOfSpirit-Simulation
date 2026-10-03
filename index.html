@@ -590,6 +590,15 @@
                 <span class="info" tabindex="0">?<span class="tip" role="tooltip">Not tested yet, numbers might be off, especially for lethal hits.</span></span>
               </span>
             </div>
+            <hr class="hr" style="margin:10px 0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:12px; color:var(--text-dim);">Adaptive Force Shard</span>
+              <span style="display:flex; align-items:center; gap:8px; flex:none;">
+                <input type="checkbox" id="hasAdaptiveOffense" style="width:auto; accent-color:var(--accent);" title="Offense shard">
+                <input type="checkbox" id="hasAdaptiveFlex" style="width:auto; accent-color:var(--accent);" title="Flex shard">
+                <span class="info" tabindex="0">?<span class="tip" role="tooltip">Adaptive Force behavior like in-game.</span></span>
+              </span>
+            </div>
           </fieldset>
 
           <hr class="hr">
@@ -761,6 +770,9 @@
   const SHOJIN_PCT_PER_STACK = 0.03;
   const SHOJIN_MAX_STACKS = 4;
 
+  const ADAPTIVE_SHARD_AD = 5.4;
+  const ADAPTIVE_SHARD_AP = 9;
+
   const CRIT_MULT = 2.0;
 
   const CONQUEROR_STACK_DURATION = 5.0;
@@ -812,7 +824,15 @@
     const adFromLevels = growthBonus(AD_PER_LEVEL, inp.level);
 
     const steraksAd = inp.hasSteraks ? (BASE_AD + adFromLevels) * 0.5 : 0;
-    const totalAd = BASE_AD + inp.adFromItems + adFromLevels + steraksAd;
+
+    // Wiki: each Adaptive Force shard is 5.4 bonus AD or 9 AP, whichever of
+    // bonus AD / AP is higher (ties go to AD for Illaoi, a physical champion).
+    const adaptiveShards = (inp.hasAdaptiveOffense ? 1 : 0) + (inp.hasAdaptiveFlex ? 1 : 0);
+    const adaptiveToAp = inp.abilityPower > inp.adFromItems + steraksAd + EPS;
+    const adaptiveAd = adaptiveToAp ? 0 : adaptiveShards * ADAPTIVE_SHARD_AD;
+    const adaptiveAp = adaptiveToAp ? adaptiveShards * ADAPTIVE_SHARD_AP : 0;
+
+    const totalAd = BASE_AD + inp.adFromItems + adFromLevels + steraksAd + adaptiveAd;
 
     const asFromLevelsPct = growthBonus(AS_PER_LEVEL, inp.level);
     const totalBonusAs = asFromLevelsPct / 100;
@@ -833,7 +853,7 @@
     );
 
     const tentacleBase = 9 + (180 - 9) / 17 * (inp.level - 1);
-    const slamOneRaw = (tentacleBase + TENTACLE_AD_RATIO * totalAd + TENTACLE_AP_RATIO * inp.abilityPower)
+    const slamOneRaw = (tentacleBase + TENTACLE_AD_RATIO * totalAd + TENTACLE_AP_RATIO * (inp.abilityPower + adaptiveAp))
                       * (1 + TENTACLE_SMASH_BONUS[inp.tentacleSmashRank]);
 
     const transmissionPct = E_TRANSMISSION_PCT[inp.eRank] + E_AD_RATIO * (totalAd / 100) + inp.bonusETransferPct;
@@ -1306,6 +1326,8 @@ W Finish Fish 4: AA, AA, AA, AA, AA, AA, W`;
       giantSlayerHpManual: $("giantSlayerHpManual").checked,
       hasCritChance: $("hasCritChance").checked,
       hasShojin: $("hasShojin").checked,
+      hasAdaptiveOffense: $("hasAdaptiveOffense").checked,
+      hasAdaptiveFlex: $("hasAdaptiveFlex").checked,
       shojinPresetStacks: +$("shojinPresetStacks").value || 0,
       decimalPlaces: +$("decimalPlaces").value || 0,
       compactVerbose: $("compactVerbose").checked,
@@ -1366,7 +1388,7 @@ W Finish Fish 4: AA, AA, AA, AA, AA, AA, W`;
       tentacleCount: inp.tentacleCount, tentacleSmashRank: inp.tentacleSmashRank, tentacleSlamDelay: inp.tentacleSlamDelay,
       eRank: inp.eRank, timeLimit: inp.timeLimit, targetHp: inp.targetHp, targetArmor: inp.targetArmor,
       targetCleaverStacks: inp.targetCleaverStacks, loseStacksAfterE: inp.loseStacksAfterE,
-      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, hasShojin: inp.hasShojin, shojinPresetStacks: inp.shojinPresetStacks, decimalPlaces: inp.decimalPlaces, compactVerbose: inp.compactVerbose, conquerorUnexpectedTPct: inp.conquerorUnexpectedTPct, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
+      hasBlackCleaver: inp.hasBlackCleaver, hasSteraks: inp.hasSteraks, hasGiantSlayer: inp.hasGiantSlayer, giantSlayerHpOverride: inp.giantSlayerHpOverride, giantSlayerHpManual: inp.giantSlayerHpManual, hasCritChance: inp.hasCritChance, hasShojin: inp.hasShojin, shojinPresetStacks: inp.shojinPresetStacks, hasAdaptiveOffense: inp.hasAdaptiveOffense, hasAdaptiveFlex: inp.hasAdaptiveFlex, decimalPlaces: inp.decimalPlaces, compactVerbose: inp.compactVerbose, conquerorUnexpectedTPct: inp.conquerorUnexpectedTPct, hasFirstStrike: inp.hasFirstStrike, hasConqueror: inp.hasConqueror,
       hasCoupDeGrace: inp.hasCoupDeGrace, hasCutDown: inp.hasCutDown, hasLastStand: inp.hasLastStand, illaoiHpPct: inp.illaoiHpPct,
       blackCleaverVerbose: inp.blackCleaverVerbose, conquerorVerbose: inp.conquerorVerbose, eTransferVerbose: inp.eTransferVerbose,
       combosText: $("combosText").value,
@@ -1629,6 +1651,8 @@ W Finish Fish 4: AA, AA, AA, AA, AA, AA, W`;
       if (saved.giantSlayerHpManual !== undefined) $("giantSlayerHpManual").checked = saved.giantSlayerHpManual;
       if (saved.hasCritChance !== undefined) $("hasCritChance").checked = saved.hasCritChance;
       if (saved.hasShojin !== undefined) $("hasShojin").checked = saved.hasShojin;
+      if (saved.hasAdaptiveOffense !== undefined) $("hasAdaptiveOffense").checked = saved.hasAdaptiveOffense;
+      if (saved.hasAdaptiveFlex !== undefined) $("hasAdaptiveFlex").checked = saved.hasAdaptiveFlex;
       if (saved.shojinPresetStacks !== undefined) $("shojinPresetStacks").value = saved.shojinPresetStacks;
       if (saved.decimalPlaces !== undefined) $("decimalPlaces").value = saved.decimalPlaces;
       if (saved.compactVerbose !== undefined) $("compactVerbose").checked = saved.compactVerbose;
