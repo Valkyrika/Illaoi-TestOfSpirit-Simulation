@@ -503,6 +503,50 @@
           </fieldset>
 
           <hr class="hr">
+          <div class="field">
+            <label style="font-size:14px; font-weight:700; color:var(--text);">Tentacles in range</label>
+            <input type="number" id="tentacleCount" value="2" min="0" max="6" step="1" style="font-size:16px; padding:9px 10px; font-weight:700;">
+          </div>
+
+          <hr class="hr">
+          <fieldset>
+            <legend>Ability ranks</legend>
+            <div class="field ability-rank-row">
+              <label>Q - Tentacle Smash</label>
+              <div class="rank-pips" data-target="tentacleSmashRank" data-min="0">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="tentacleSmashRank" value="3">
+            </div>
+            <div class="field ability-rank-row">
+              <label>W - Harsh Lesson</label>
+              <div class="rank-pips" data-target="wRank" data-min="1">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="wRank" value="1">
+            </div>
+            <div class="field ability-rank-row">
+              <label>E - Test of Spirit</label>
+              <div class="rank-pips" data-target="eRank" data-min="1">
+                <button type="button" class="pip" data-value="1"></button>
+                <button type="button" class="pip" data-value="2"></button>
+                <button type="button" class="pip" data-value="3"></button>
+                <button type="button" class="pip" data-value="4"></button>
+                <button type="button" class="pip" data-value="5"></button>
+              </div>
+              <input type="hidden" id="eRank" value="1">
+            </div>
+          </fieldset>
+
+          <hr class="hr">
           <fieldset>
             <legend>Items</legend>
             <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
@@ -601,49 +645,6 @@
             </div>
           </fieldset>
 
-          <hr class="hr">
-          <div class="field">
-            <label style="font-size:14px; font-weight:700; color:var(--text);">Tentacles in range</label>
-            <input type="number" id="tentacleCount" value="2" min="0" max="6" step="1" style="font-size:16px; padding:9px 10px; font-weight:700;">
-          </div>
-
-          <hr class="hr">
-          <fieldset>
-            <legend>Ability ranks</legend>
-            <div class="field ability-rank-row">
-              <label>Q - Tentacle Smash</label>
-              <div class="rank-pips" data-target="tentacleSmashRank" data-min="0">
-                <button type="button" class="pip" data-value="1"></button>
-                <button type="button" class="pip" data-value="2"></button>
-                <button type="button" class="pip" data-value="3"></button>
-                <button type="button" class="pip" data-value="4"></button>
-                <button type="button" class="pip" data-value="5"></button>
-              </div>
-              <input type="hidden" id="tentacleSmashRank" value="3">
-            </div>
-            <div class="field ability-rank-row">
-              <label>W - Harsh Lesson</label>
-              <div class="rank-pips" data-target="wRank" data-min="1">
-                <button type="button" class="pip" data-value="1"></button>
-                <button type="button" class="pip" data-value="2"></button>
-                <button type="button" class="pip" data-value="3"></button>
-                <button type="button" class="pip" data-value="4"></button>
-                <button type="button" class="pip" data-value="5"></button>
-              </div>
-              <input type="hidden" id="wRank" value="1">
-            </div>
-            <div class="field ability-rank-row">
-              <label>E - Test of Spirit</label>
-              <div class="rank-pips" data-target="eRank" data-min="1">
-                <button type="button" class="pip" data-value="1"></button>
-                <button type="button" class="pip" data-value="2"></button>
-                <button type="button" class="pip" data-value="3"></button>
-                <button type="button" class="pip" data-value="4"></button>
-                <button type="button" class="pip" data-value="5"></button>
-              </div>
-              <input type="hidden" id="eRank" value="1">
-            </div>
-          </fieldset>
 
           <hr class="hr">
           <fieldset>
